@@ -1,124 +1,90 @@
-import { useRef, useEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useRef, useEffect, useMemo } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import rippleVertex from '../shaders/rippleVertex.glsl';
-import rippleFragment from '../shaders/rippleFragment.glsl';
+import { RipplePostEffect } from '../effects/RipplePostEffect';
 
 const RIPPLE_SPEED = 0.3;
-const RIPPLE_PEAK = 0.2;
+const RIPPLE_PEAK = 0.1;
 const easeOutQuart = (t) => 1 - --t * t * t * t;
 const linear = (t) => t;
 
+/**
+ * RippleEffect
+ * Manages the offscreen 2D canvas that encodes click-driven ripple data and
+ * registers the post-processing <RipplePostEffect> inside <EffectComposer>.
+ */
 export default function RippleEffect() {
-  const { gl, scene, camera } = useThree();
   const stateRef = useRef(null);
+  const dprRef = useRef(Math.min(window.devicePixelRatio, 2));
 
-  useEffect(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-
-    // 1. offscreen canvas
+  // Create the offscreen canvas and texture once during mount
+  const { texture } = useMemo(() => {
+    const dpr = dprRef.current;
     const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = 'rgb(128, 128, 0)';
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const texture = new THREE.Texture(canvas);
     texture.minFilter = THREE.NearestFilter;
     texture.magFilter = THREE.NearestFilter;
     texture.needsUpdate = true;
 
-    // 2. proxy renderer (avoids infinite recursion when we override gl.render)
-    const originalRender = gl.render.bind(gl);
-    const proxyRenderer = new Proxy(gl, {
-      get(target, prop) {
-        if (prop === 'render') return (s, c) => originalRender.call(target, s, c);
-        const val = Reflect.get(target, prop);
-        return typeof val === 'function' ? val.bind(target) : val;
-      },
-    });
-
-    // 3. composer attached to the proxy
-    const composer = new EffectComposer(proxyRenderer);
-    composer.setSize(w, h);
-    composer.addPass(new RenderPass(scene, camera));
-
-    // 4. ripple shader pass — don't pass tRipple here or it gets cloned
-    const ripplePass = new ShaderPass({
-      uniforms: {
-        tDiffuse: { value: null },
-        tRipple: { value: null },
-        distort: { value: new THREE.Vector2(0.001, 0.001) },
-      },
-      vertexShader: rippleVertex,
-      fragmentShader: rippleFragment,
-    });
-    ripplePass.uniforms.tRipple.value = texture;
-    ripplePass.needsSwap = false;
-    composer.addPass(ripplePass);
-
-    // 5. mutable state
-    const state = {
-      composer,
+    stateRef.current = {
       canvas,
       ctx,
       texture,
       ripples: [],
       wasRendering: false,
     };
-    stateRef.current = state;
 
-    // 6. click handler
+    return { texture };
+  }, []);
+
+  // Click & resize handlers
+  useEffect(() => {
+    const state = stateRef.current;
+    if (!state) return;
+
     const handleClick = (e) => {
+      const u = e.clientX / window.innerWidth;
+      const v = e.clientY / window.innerHeight;
       state.ripples.push({
         age: 0,
-        position: new THREE.Vector2(e.clientX, e.clientY),
-        color: new THREE.Vector2(
-          (e.clientX / window.innerWidth) * 255,
-          (e.clientY / window.innerHeight) * 255
-        ),
+        color: new THREE.Vector2(u * 255, v * 255),
       });
     };
+
+    const handleResize = () => {
+      const dpr = dprRef.current;
+      const nw = Math.floor(window.innerWidth * dpr);
+      const nh = Math.floor(window.innerHeight * dpr);
+      state.canvas.width = nw;
+      state.canvas.height = nh;
+      state.ctx.fillStyle = 'rgb(128, 128, 0)';
+      state.ctx.fillRect(0, 0, nw, nh);
+      state.texture.needsUpdate = true;
+    };
+
     window.addEventListener('click', handleClick);
-
-    // 7. redirect real renderer.render to composer.render
-    gl.render = () => {
-      composer.render();
-    };
-
-    // 8. resize
-    const onResize = () => {
-      const nw = window.innerWidth;
-      const nh = window.innerHeight;
-      canvas.width = nw;
-      canvas.height = nh;
-      ctx.fillStyle = 'rgb(128, 128, 0)';
-      ctx.fillRect(0, 0, nw, nh);
-      composer.setSize(nw, nh);
-    };
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', handleResize);
 
     return () => {
       window.removeEventListener('click', handleClick);
-      window.removeEventListener('resize', onResize);
-      gl.render = originalRender;
-      composer.dispose();
-      texture.dispose();
+      window.removeEventListener('resize', handleResize);
+      state.texture.dispose();
       stateRef.current = null;
     };
-  }, [gl, scene, camera]);
+  }, []);
 
-  // 9. frame loop : dessine les ripples dans le canvas offscreen
+  // Draw active ripples into the offscreen canvas each frame
   useFrame((_state, delta) => {
     const st = stateRef.current;
     if (!st) return;
 
-    const { canvas, ctx, texture, ripples } = st;
+    const { canvas, ctx, texture: tex, ripples } = st;
 
     if (ripples.length > 0) {
       st.wasRendering = true;
@@ -133,6 +99,9 @@ export default function RippleEffect() {
           continue;
         }
 
+        const px = (ripple.color.x / 255) * canvas.width;
+        const py = (ripple.color.y / 255) * canvas.height;
+
         const sz = canvas.height * easeOutQuart(ripple.age);
         const alpha =
           ripple.age < RIPPLE_PEAK
@@ -140,33 +109,34 @@ export default function RippleEffect() {
             : 1 - linear((ripple.age - RIPPLE_PEAK) / (1 - RIPPLE_PEAK));
 
         const grd = ctx.createRadialGradient(
-          ripple.position.x,
-          ripple.position.y,
+          px,
+          py,
           sz * 0.25,
-          ripple.position.x,
-          ripple.position.y,
+          px,
+          py,
           sz * 0.5
         );
         grd.addColorStop(1, 'rgba(128, 128, 0, 0.5)');
         grd.addColorStop(
-          0.8,
-          `rgba(${ripple.color.x}, ${ripple.color.y}, ${10 * alpha}, ${alpha})`
+          0.2,
+          `rgba(${ripple.color.x}, ${ripple.color.y}, ${100 * alpha}, ${alpha})`
         );
         grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
 
         ctx.beginPath();
         ctx.fillStyle = grd;
-        ctx.arc(ripple.position.x, ripple.position.y, sz, 0, Math.PI * 2);
+        ctx.arc(px, py, sz, 0, Math.PI * 2);
         ctx.fill();
       }
-      texture.needsUpdate = true;
+
+      tex.needsUpdate = true;
     } else if (st.wasRendering) {
       ctx.fillStyle = 'rgb(128, 128, 0)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       st.wasRendering = false;
-      texture.needsUpdate = true;
+      tex.needsUpdate = true;
     }
   });
 
-  return null;
+  return <RipplePostEffect tRipple={texture} />;
 }

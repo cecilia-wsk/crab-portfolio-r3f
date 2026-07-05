@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
+import { EffectComposer } from '@react-three/postprocessing';
 import CrabParticles from './CrabParticles';
 import Stars from './Stars';
 import RippleEffect from './RippleEffect';
@@ -20,7 +21,9 @@ export default function Scene({ mouseRef }) {
         <CrabParticles mouseRef={mouseRef} />
       </Suspense>
       <Stars />
-      <RippleEffect />
+      <EffectComposer>
+        <RippleEffect />
+      </EffectComposer>
     </>
   );
 }
