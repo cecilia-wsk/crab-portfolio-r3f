@@ -14,6 +14,10 @@ export default function Stars() {
     positions.current[i * 3] = (Math.random() - 0.5) * 2000;
     positions.current[i * 3 + 1] = (Math.random() - 0.5) * 2000;
     positions.current[i * 3 + 2] = (Math.random() - 0.5) * 2000;
+    // Confine stars to a small square box around the crab (~30x30 units, shallow Z)
+    // positions.current[i * 3] = (Math.random() - 0.5) * 30;
+    // positions.current[i * 3 + 1] = (Math.random() - 0.5) * 30 - 0.5;
+    // positions.current[i * 3 + 2] = (Math.random() - 0.5) * 30;
   }
 
   const uniforms = useRef({ uTime: { value: 0 } });

@@ -93,13 +93,11 @@ export default function RippleEffect() {
 
     // 8. resize
     const onResize = () => {
-      const nw = window.innerWidth;
-      const nh = window.innerHeight;
-      canvas.width = nw;
-      canvas.height = nh;
+      canvas.width =  window.innerWidth;
+      canvas.height = window.innerHeight;
       ctx.fillStyle = 'rgb(128, 128, 0)';
-      ctx.fillRect(0, 0, nw, nh);
-      composer.setSize(nw, nh);
+      ctx.fillRect(0, 0,  window.innerWidth, window.innerHeight);
+      composer.setSize( window.innerWidth, window.innerHeight);
     };
     window.addEventListener('resize', onResize);
 
@@ -149,8 +147,8 @@ export default function RippleEffect() {
         );
         grd.addColorStop(1, 'rgba(128, 128, 0, 0.5)');
         grd.addColorStop(
-          0.8,
-          `rgba(${ripple.color.x}, ${ripple.color.y}, ${10 * alpha}, ${alpha})`
+          0.6,
+          `rgba(${ripple.color.x}, ${ripple.color.y}, ${5 * alpha}, ${alpha})`
         );
         grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
 

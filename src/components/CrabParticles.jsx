@@ -58,8 +58,8 @@ export default function CrabParticles({ mouseRef }) {
     }
 
     if (groupRef.current) {
-      const targetX = mouseRef.current.y * 0.05;
-      const targetY = mouseRef.current.x * 0.05;
+      const targetX = mouseRef.current.y * 0.1;
+      const targetY = mouseRef.current.x * 0.1;
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
         targetX,

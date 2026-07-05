@@ -10,7 +10,7 @@ export default function Scene({ mouseRef }) {
       <color attach="background" args={['#0b0b0b']} />
       <PerspectiveCamera
         makeDefault
-        position={[0, 0, -3]}
+        position={[0, 0, -6]}
         fov={75}
         near={0.001}
         far={10000}
