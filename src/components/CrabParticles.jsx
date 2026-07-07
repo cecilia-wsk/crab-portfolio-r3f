@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -26,14 +26,13 @@ export default function CrabParticles({ mouseRef }) {
 
   const uniforms = useMemo(
     () => ({
-      uTime: { value: 0 },
-      uMouse: { value: new THREE.Vector2(0, 0) },
-      uResolution: {
-        value: new THREE.Vector4(window.innerWidth, window.innerHeight, 1, 1),
-      },
-    }),
+        uTime: { value: 0 },
+        uMouse: { value: new THREE.Vector2(0, 0) },
+        uResolution: { value: new THREE.Vector4(window.innerWidth, window.innerHeight, 1, 1) },
+      }),
     []
   );
+
 
   // update uResolution on window resize
   useEffect(() => {
@@ -84,10 +83,11 @@ export default function CrabParticles({ mouseRef }) {
           vertexShader={vertexParticles}
           fragmentShader={fragmentShader}
           blending={THREE.AdditiveBlending}
-          side={THREE.DoubleSide}
           depthWrite={false}
         />
       </points>
     </group>
   );
 }
+
+useGLTF.preload('/assets/crab_draco.glb');

@@ -21,12 +21,7 @@ export default function App() {
         dpr={[1, 2]}
         gl={{
           antialias: true,
-          powerPreference: 'high-performance',
-          alpha: true,
-        }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(new THREE.Color(0x0b0b0b), 1);
-          gl.physicallyCorrectLights = true;
+          powerPreference: 'high-performance'
         }}
       >
         <Scene mouseRef={mouseRef} />

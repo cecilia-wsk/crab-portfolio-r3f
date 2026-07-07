@@ -6,36 +6,28 @@ import starsFragment from '../shaders/starsFragment.glsl';
 
 const COUNT = 10000;
 
-export default function Stars() {
-  const materialRef = useRef();
+const positions = (() => {
+  const array = new Float32Array(COUNT * 3);
 
-  const positions = useRef(new Float32Array(COUNT * 3));
   for (let i = 0; i < COUNT; i++) {
-    positions.current[i * 3] = (Math.random() - 0.5) * 2000;
-    positions.current[i * 3 + 1] = (Math.random() - 0.5) * 2000;
-    positions.current[i * 3 + 2] = (Math.random() - 0.5) * 2000;
-    // Confine stars to a small square box around the crab (~30x30 units, shallow Z)
-    // positions.current[i * 3] = (Math.random() - 0.5) * 30;
-    // positions.current[i * 3 + 1] = (Math.random() - 0.5) * 30 - 0.5;
-    // positions.current[i * 3 + 2] = (Math.random() - 0.5) * 30;
+    array[i * 3] = (Math.random() - 0.5) * 2000;
+    array[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+    array[i * 3 + 2] = (Math.random() - 0.5) * 2000;
   }
 
-  const uniforms = useRef({ uTime: { value: 0 } });
+  return array;
+})();
 
-  useFrame(({ clock }) => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
-    }
-  });
+export default function Stars() {
+  const materialRef = useRef();
 
   return (
     <points>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions.current, 3]} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <shaderMaterial
         ref={materialRef}
-        uniforms={uniforms.current}
         vertexShader={starsVertex}
         fragmentShader={starsFragment}
         blending={THREE.AdditiveBlending}

@@ -99,6 +99,7 @@ export default function RippleEffect() {
       ctx.fillRect(0, 0,  window.innerWidth, window.innerHeight);
       composer.setSize( window.innerWidth, window.innerHeight);
     };
+    
     window.addEventListener('resize', onResize);
 
     return () => {

@@ -12,8 +12,8 @@ export default function Scene({ mouseRef }) {
         makeDefault
         position={[0, 0, -6]}
         fov={75}
-        near={0.001}
-        far={10000}
+        near={0.1}
+        far={1000}
       />
       <OrbitControls enableDamping dampingFactor={0.05} />
       <Suspense fallback={null}>

@@ -1,4 +1,5 @@
 uniform float uTime;
+uniform vec4 uResolution;
 
 //
 // Description : Array and textureless GLSL 2D simplex noise function.
@@ -96,6 +97,14 @@ void main() {
   newPos = mix(position, target, pow(d, 4.0));
 
   vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
-  gl_PointSize = 0.1;
+  // gl_PointSize = 0.1;
+
+  // Calculate particle size
+  float particleSize = 0.15; // Adjust this formula as needed
+  // Adjust particle size based on screen resolution
+  particleSize *= min(uResolution.a, uResolution.b)/min(16.,9.);
+  // Set gl_PointSize
+  gl_PointSize = particleSize;
+  
   gl_Position = projectionMatrix * mvPosition;
 }
