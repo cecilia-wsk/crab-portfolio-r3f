@@ -79,8 +79,8 @@ export default function RippleEffect() {
     const rippleScene = new THREE.Scene();
     rippleScene.background = new THREE.Color(0x808000);
 
-    const rippleCamera = new THREE.OrthographicCamera(0, w, 0, h, -10, 10);
-    rippleCamera.position.set(0, 0, 0);
+    const rippleCamera = new THREE.OrthographicCamera(0, w, 0, h, 0.1, 100);
+    rippleCamera.position.set(0, 0, 5);
     rippleCamera.updateMatrixWorld();
 
     // 3. Pooled meshes for GPU ripple rendering
@@ -115,6 +115,16 @@ export default function RippleEffect() {
         colorY: 128,
       });
     }
+
+    // DEBUG: permanent bright-red reference mesh in top-left corner
+    // If the FBO → composer pipeline is alive, you should see a red distortion artifact.
+    const debugMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(200, 200),
+      new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    );
+    debugMesh.position.set(100, 100, 0);
+    debugMesh.frustumCulled = false;
+    rippleScene.add(debugMesh);
 
     // 4. Proxy renderer (avoids infinite recursion when we override gl.render)
     const originalRender = gl.render.bind(gl);
@@ -158,6 +168,7 @@ export default function RippleEffect() {
 
     // 8. Click handler
     const handleClick = (e) => {
+      console.log('[DEBUG] click at', e.clientX, e.clientY);
       if (state.ripples.length >= MAX_RIPPLES) return;
       state.ripples.push({
         age: 0,
@@ -223,6 +234,7 @@ export default function RippleEffect() {
     }
 
     const activeCount = ripples.length;
+    console.log('[DEBUG] useFrame: active ripples =', activeCount);
 
     // Reset all pool entries
     for (let i = 0; i < MAX_RIPPLES; i++) {
