@@ -94,6 +94,13 @@ export default function RippleEffect() {
 
     // 3. Instanced mesh for GPU ripple rendering
     const geometry = new THREE.CircleGeometry(1, 64);
+
+    // Custom instance attributes (must be set BEFORE creating InstancedMesh)
+    const iAlphaAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_RIPPLES), 1);
+    const iColorAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_RIPPLES * 2), 2);
+    geometry.setAttribute('iAlpha', iAlphaAttr);
+    geometry.setAttribute('iColor', iColorAttr);
+
     const material = new THREE.ShaderMaterial({
       vertexShader: GPU_RIPPLE_VERTEX,
       fragmentShader: GPU_RIPPLE_FRAGMENT,
@@ -105,12 +112,6 @@ export default function RippleEffect() {
     const mesh = new THREE.InstancedMesh(geometry, material, MAX_RIPPLES);
     mesh.frustumCulled = false;
     mesh.count = 0;
-
-    // Custom instance attributes
-    const iAlphaAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_RIPPLES), 1);
-    const iColorAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_RIPPLES * 2), 2);
-    geometry.setAttribute('iAlpha', iAlphaAttr);
-    geometry.setAttribute('iColor', iColorAttr);
 
     rippleScene.add(mesh);
 
@@ -175,7 +176,8 @@ export default function RippleEffect() {
     //    a) render ripple simulation into FBO
     //    b) run composer on main scene
     gl.render = () => {
-      originalRender.call(gl, state.rippleScene, state.rippleCamera, state.rt);
+      gl.setRenderTarget(state.rt);
+      originalRender.call(gl, state.rippleScene, state.rippleCamera);
       gl.setRenderTarget(null);
       composer.render();
     };
