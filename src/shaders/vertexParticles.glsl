@@ -100,7 +100,7 @@ void main() {
   // gl_PointSize = 0.1;
 
   // Calculate particle size
-  float particleSize = 0.15; // Adjust this formula as needed
+  float particleSize = 0.25; // Adjust this formula as needed
   // Adjust particle size based on screen resolution
   particleSize *= min(uResolution.a, uResolution.b)/min(16.,9.);
   // Set gl_PointSize
