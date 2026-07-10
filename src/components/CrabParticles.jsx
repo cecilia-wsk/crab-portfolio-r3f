@@ -38,7 +38,6 @@ export default function CrabParticles({ mouseRef }) {
       }
 
       geo.setAttribute("position", new THREE.BufferAttribute(reduced, 3));
-      // Remove the old triangle index so points render correctly
       geo.index = null;
       geo.clearGroups();
       for (const key of Object.keys(geo.attributes)) {
@@ -106,7 +105,7 @@ export default function CrabParticles({ mouseRef }) {
       rotation={[0, BASE_ROTATION_Y, 0]}
       position={[-3, 0, 0]}
     >
-      <points geometry={geometry}>
+      <points geometry={geometry} name="crab-particles">
         <shaderMaterial
           ref={materialRef}
           uniforms={uniforms}

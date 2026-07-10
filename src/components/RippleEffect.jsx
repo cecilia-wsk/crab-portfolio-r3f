@@ -10,10 +10,10 @@ import rippleVertex from "../shaders/rippleVertex.glsl";
 import rippleFragment from "../shaders/rippleFragment.glsl";
 
 const RIPPLE_SPEED = 0.3;
+const FADE_SPEED = 0.4;
 const RIPPLE_PEAK = 0.2;
-const MAX_RIPPLES = 15;
+const MAX_RIPPLES = 10;
 const easeOutQuart = (t) => 1 - --t * t * t * t;
-const linear = (t) => t;
 
 const RIPPLE_MESH_VERTEX = `
   varying vec2 vLocalPos;
@@ -28,15 +28,15 @@ const RIPPLE_MESH_FRAGMENT = `
 
   varying vec2 vLocalPos;
   uniform float uAlpha;
-  uniform vec2 uColor;
+  uniform vec2  uColor;
   uniform float uScale;
   uniform float uWaveRadius;
   uniform float uReachMin;
   uniform float uPulseWidthFactor;
   uniform float uTendrilMin;
   uniform float uDispStrength;
+  uniform float uTime;
 
-  // --- fast 2D value noise ---
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
   }
@@ -52,7 +52,6 @@ const RIPPLE_MESH_FRAGMENT = `
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
 
-  // 2-octave fBm
   float fbm(vec2 p) {
     float v = 0.0;
     float a = 0.5;
@@ -67,32 +66,26 @@ const RIPPLE_MESH_FRAGMENT = `
   void main() {
     float dist = length(vLocalPos) * uScale;
 
-    // Angle around the click center (continuous via circ)
     float angle = atan(vLocalPos.y, vLocalPos.x);
     vec2 circ = vec2(cos(angle), sin(angle));
 
-    // Flame reach varies by direction and evolves as the wave expands
-    float reach = fbm(circ * 2.5 + vec2(0.0, uWaveRadius * 0.02));
+    // animate even when frozen via uTime
+    float reach = fbm(circ * 2.5 + vec2(0.0, uWaveRadius * 0.02 + uTime * 0.8));
     reach = uReachMin + (1.0 - uReachMin) * reach;
     float rVar = uWaveRadius * reach;
 
-    // Pulse width
     float w = max(uWaveRadius * uPulseWidthFactor, 12.0);
 
-    // Tendril detail
-    float tendril = fbm(circ * 6.0 + vec2(10.0, -uWaveRadius * 0.03));
+    float tendril = fbm(circ * 6.0 + vec2(10.0, -uWaveRadius * 0.03 - uTime * 1.2));
     tendril = uTendrilMin + (1.0 - uTendrilMin) * tendril;
 
-    // Shockwave envelope: Gaussian ring modulated by tendril brightness
     float envelope = exp(-pow((dist - rVar) / w, 2.0)) * tendril;
 
-    // Pixels outside the active flame-front are transparent
     vec3 peakRGB = vec3(uColor.x, uColor.y, uDispStrength * uAlpha) / 255.0;
     gl_FragColor = vec4(peakRGB, envelope);
   }
 `;
 
-// Custom pass: renders ripple scene into FBO
 class RippleRenderPass extends Pass {
   constructor(scene, camera, renderTarget, clearColor) {
     super();
@@ -102,7 +95,6 @@ class RippleRenderPass extends Pass {
     this.renderTarget = renderTarget;
     this.clearColor = clearColor;
   }
-
   render(renderer) {
     const tmpColor = new THREE.Color();
     const prevClearColor = renderer.getClearColor(tmpColor);
@@ -136,7 +128,6 @@ export default function RippleEffect() {
     const cssW = window.innerWidth;
     const cssH = window.innerHeight;
 
-    // 1. FBO (ripple texture at full physical pixel size for crispness)
     const rt = new THREE.WebGLRenderTarget(w, h, {
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter,
@@ -146,14 +137,12 @@ export default function RippleEffect() {
     });
     rt.texture.colorSpace = THREE.NoColorSpace;
 
-    // 2. Ripple scene (manual clear, no background)
     const rippleScene = new THREE.Scene();
     const rippleCamera = new THREE.OrthographicCamera(0, w, 0, h, 0.1, 100);
     rippleCamera.position.set(0, 0, 5);
     rippleCamera.updateMatrixWorld();
     const rippleClearColor = new THREE.Color(128.0 / 255.0, 128.0 / 255.0, 0.0);
 
-    // 3. Pooled meshes (PlaneGeometry + analytic circle)
     const geometry = new THREE.PlaneGeometry(2, 2);
     const pool = [];
 
@@ -172,6 +161,7 @@ export default function RippleEffect() {
           uColor: { value: new THREE.Vector2(128, 128) },
           uScale: { value: 1 },
           uWaveRadius: { value: 0 },
+          uTime: { value: 0 },
           uReachMin: { value: rippleParams.reachMin },
           uPulseWidthFactor: { value: rippleParams.pulseWidthFactor },
           uTendrilMin: { value: rippleParams.tendrilMin },
@@ -187,7 +177,6 @@ export default function RippleEffect() {
       pool.push({ mesh, material, active: false });
     }
 
-    // 4. Proxy renderer
     const originalRender = gl.render.bind(gl);
     const proxyRenderer = new Proxy(gl, {
       get(target, prop) {
@@ -198,7 +187,6 @@ export default function RippleEffect() {
       },
     });
 
-    // 5. Composer (CSS pixels — EffectComposer handles DPR internally)
     const composer = new EffectComposer(proxyRenderer);
     composer.setSize(cssW, cssH);
 
@@ -220,46 +208,100 @@ export default function RippleEffect() {
     ripplePass.needsSwap = false;
     composer.addPass(ripplePass);
 
-    // 6. State
-    const state = { composer, rt, pool, ripples: [] };
-    stateRef.current = state;
+    // ── hover detection raycaster ──
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const hoverState = {
+      isHovering: false,
+      mouseMoveAccum: 0,
+      clientX: 0,
+      clientY: 0,
+    };
 
-    // Click trigger
-    const handleClick = (e) => {
+    const checkHover = () => {
+      raycaster.params.Points = { threshold: 1.2 };
+      raycaster.setFromCamera(mouse, camera);
+
+      let pointsObj = null;
+      scene.traverse((c) => {
+        if (c.name === "crab-particles") pointsObj = c;
+      });
+
+      if (!pointsObj || !pointsObj.geometry) return false;
+      const hits = raycaster.intersectObject(pointsObj);
+      return hits.length > 0;
+    };
+
+    const onMove = (e) => {
+      const prevX = mouse.x;
+      const prevY = mouse.y;
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      hoverState.isHovering = checkHover();
+      hoverState.clientX = e.clientX;
+      hoverState.clientY = e.clientY;
+
+      if (hoverState.isHovering) {
+        const dx = mouse.x - prevX;
+        const dy = mouse.y - prevY;
+        if (Math.abs(dx) + Math.abs(dy) > 0.003) {
+          hoverState.mouseMoveAccum += 1;
+        }
+      }
+
+      if (window.innerWidth <= 768) return;
+    };
+
+    const onClick = (e) => {
+      if (window.innerWidth > 768) return; // click only on mobile
       if (!stateRef.current) return;
       const st = stateRef.current;
       if (st.ripples.length >= MAX_RIPPLES) return;
-      const dpr = gl.getPixelRatio();
+      const clientDpr = gl.getPixelRatio();
       st.ripples.push({
         age: 0,
-        position: new THREE.Vector2(e.clientX * dpr, e.clientY * dpr),
+        freezeAge: 0,
+        frozen: false,
+        position: new THREE.Vector2(
+          e.clientX * clientDpr,
+          e.clientY * clientDpr,
+        ),
         color: new THREE.Vector2(
           (e.clientX / window.innerWidth) * 255,
           (e.clientY / window.innerHeight) * 255,
         ),
       });
     };
-    window.addEventListener("click", handleClick);
 
-    // 7. Override renderer
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("click", onClick);
+
+    // state stored on ref so useFrame can read
+    const state = {
+      composer,
+      rt,
+      pool,
+      ripples: [],
+      mouse,
+      hoverState,
+    };
+    stateRef.current = state;
+
     gl.render = () => {
       composer.render();
     };
 
-    // 9. Resize
     let resizeTimer;
     const onResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        const bufSize = new THREE.Vector2();
-        gl.getDrawingBufferSize(bufSize);
-        const nw = bufSize.x;
-        const nh = bufSize.y;
-        rt.setSize(nw, nh);
+        const buf = new THREE.Vector2();
+        gl.getDrawingBufferSize(buf);
+        rt.setSize(buf.x, buf.y);
         rippleCamera.left = 0;
-        rippleCamera.right = nw;
+        rippleCamera.right = buf.x;
         rippleCamera.top = 0;
-        rippleCamera.bottom = nh;
+        rippleCamera.bottom = buf.y;
         rippleCamera.updateProjectionMatrix();
         composer.setSize(window.innerWidth, window.innerHeight);
       }, 200);
@@ -268,48 +310,107 @@ export default function RippleEffect() {
 
     return () => {
       clearTimeout(resizeTimer);
-      window.removeEventListener("click", handleClick);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("click", onClick);
       window.removeEventListener("resize", onResize);
       gl.render = originalRender;
       composer.dispose();
       rt.dispose();
       geometry.dispose();
-      pool.forEach((entry) => entry.material.dispose());
+      pool.forEach((e) => e.material.dispose());
       stateRef.current = null;
     };
   }, [gl, scene, camera]);
 
-  // 10. Frame loop
-  useFrame((_state, delta) => {
+  useFrame((_, delta) => {
     const st = stateRef.current;
     if (!st) return;
-
     const { pool, ripples } = st;
 
-    // Age & cull
+    // --- HOVER logic (desktop only) ---
+    if (window.innerWidth > 768) {
+      const hs = st.hoverState;
+      if (hs.isHovering) {
+        const dpr = gl.getPixelRatio();
+        const x = hs.clientX * dpr;
+        const y = hs.clientY * dpr;
+
+        // find existing active hover ripple (not fading out)
+        const existing = ripples.find((r) => r.hover && !r.leaving);
+
+        if (existing) {
+          // move with mouse but keep age frozen at peak
+          existing.position.set(x, y);
+        } else {
+          // first entry or old one already gone → spawn fresh
+          ripples.push({
+            hover: true,
+            age: 0,
+            freezeAge: RIPPLE_PEAK,
+            frozen: false,
+            leaving: false,
+            position: new THREE.Vector2(x, y),
+            color: new THREE.Vector2(
+              (st.mouse.x * 0.5 + 0.5) * 255,
+              (st.mouse.y * 0.5 + 0.5) * 255,
+            ),
+          });
+        }
+      }
+    }
+
+    // --- age & cull ---
     for (let i = ripples.length - 1; i >= 0; i--) {
       const r = ripples[i];
-      r.age += delta * RIPPLE_SPEED;
+
+      if (r.frozen && r.hover) {
+        // mouse left → start fade-out
+        if (!st.hoverState.isHovering) {
+          r.frozen = false;
+          r.leaving = true;
+        }
+      }
+
+      if (r.leaving || (!r.frozen && r.freezeAge === 0)) {
+        r.age += delta * FADE_SPEED;
+      } else if (!r.frozen) {
+        r.age += delta * RIPPLE_SPEED;
+        if (r.age >= r.freezeAge) {
+          r.frozen = true;
+          r.age = r.freezeAge;
+        }
+      }
+
       if (r.age > 1) ripples.splice(i, 1);
     }
 
+    // --- render pool ---
     const activeCount = ripples.length;
-
-    // Reset
     for (let i = 0; i < MAX_RIPPLES; i++) {
       pool[i].active = false;
       pool[i].mesh.visible = false;
     }
 
-    // Activate (newest first)
     for (let i = activeCount - 1; i >= 0; i--) {
       const ripple = ripples[i];
       const entry = pool[activeCount - 1 - i];
 
       entry.active = true;
-      const waveRadius = window.innerHeight * (1.2 * ripple.age);
+      const waveRadius =
+        window.innerHeight * (1.2 * ripple.age) * gl.getPixelRatio();
       const sz = Math.max(waveRadius * 2.5, 50.0);
-      const alpha = 1.0 - easeOutQuart(ripple.age);
+
+      // full brightness while growing or frozen; only fade when leaving
+      const fadeProgress =
+        ripple.leaving || ripple.freezeAge === 0
+          ? ripple.freezeAge > 0
+            ? Math.min(
+                1,
+                (ripple.age - ripple.freezeAge) / (1 - ripple.freezeAge),
+              )
+            : ripple.age
+          : 0;
+      const alpha = 1.0 - easeOutQuart(fadeProgress);
 
       entry.mesh.visible = true;
       entry.mesh.position.set(ripple.position.x, ripple.position.y, 0);
@@ -324,6 +425,7 @@ export default function RippleEffect() {
       entry.material.uniforms.uTendrilMin.value = rippleParams.tendrilMin;
       entry.material.uniforms.uDispStrength.value =
         rippleParams.displacementStrength;
+      entry.material.uniforms.uTime.value += delta; // animate fire
     }
   });
 
