@@ -1,16 +1,14 @@
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, forwardRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import vertexParticles from "../shaders/vertexParticles.glsl";
 import fragmentShader from "../shaders/fragment.glsl";
 
-const BASE_ROTATION_Y = -Math.PI * 0.92;
+export const BASE_ROTATION_Y = -Math.PI * 0.92;
 
-export default function CrabParticles({ mouseRef }) {
-  const groupRef = useRef();
+const CrabParticles = forwardRef(function CrabParticles({ mouseRef }, ref) {
   const materialRef = useRef();
-
   // load model (drei handles draco by default from a CDN when `true` is passed)
   const { scene } = useGLTF("/assets/crab_draco.glb", true);
 
@@ -81,16 +79,16 @@ export default function CrabParticles({ mouseRef }) {
       uniforms.uMouse.value.lerp(mouseRef.current, 0.1);
     }
 
-    if (groupRef.current) {
+    if (ref.current && !ref.current.userData.isAnimating) {
       const targetX = mouseRef.current.y * 0.05;
       const targetY = mouseRef.current.x * 0.05 + BASE_ROTATION_Y;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(
-        groupRef.current.rotation.x,
+      ref.current.rotation.x = THREE.MathUtils.lerp(
+        ref.current.rotation.x,
         targetX,
         0.05,
       );
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(
-        groupRef.current.rotation.y,
+      ref.current.rotation.y = THREE.MathUtils.lerp(
+        ref.current.rotation.y,
         targetY,
         0.05,
       );
@@ -101,7 +99,7 @@ export default function CrabParticles({ mouseRef }) {
 
   return (
     <group
-      ref={groupRef}
+      ref={ref}
       rotation={[0, BASE_ROTATION_Y, 0]}
       position={[-3, 0, 0]}
     >
@@ -117,6 +115,8 @@ export default function CrabParticles({ mouseRef }) {
       </points>
     </group>
   );
-}
+});
+
+export default CrabParticles;
 
 useGLTF.preload("/assets/crab_draco.glb");

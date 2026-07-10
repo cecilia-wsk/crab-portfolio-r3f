@@ -13,7 +13,7 @@ function CameraTarget() {
   return null;
 }
 
-export default function Scene({ mouseRef }) {
+export default function Scene({ mouseRef, crabRef }) {
   return (
     <>
       <color attach="background" args={["#000000"]} />
@@ -26,7 +26,7 @@ export default function Scene({ mouseRef }) {
         far={1000}
       />
       <Suspense fallback={null}>
-        <CrabParticles mouseRef={mouseRef} />
+        <CrabParticles ref={crabRef} mouseRef={mouseRef} />
       </Suspense>
       <Stars />
       <RippleEffect />
