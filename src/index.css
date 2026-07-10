@@ -280,14 +280,49 @@ button:focus-visible {
     opacity 0.3s ease;
 }
 
-/* ─── Mobile adaptations ─── */
+/* Large left-side headline */
+.ui-headline {
+  position: fixed;
+  top: 28%;
+  left: 32px;
+  z-index: 11;
+  line-height: 0.9;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+.ui-headline-top,
+.ui-headline-bottom {
+  font-family: "Staff X Wide", sans-serif;
+  font-size: clamp(36px, 5.5vw, 90px);
+  color: #ffffff;
+  pointer-events: none;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.ui-intro {
+  max-width: 50ch;
+  margin-top: 32px;
+  font-family: "Satoshi", sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
 @media (max-width: 768px) {
   .ui-nav {
     padding: 20px 24px;
   }
 
-  .ui-status {
-    display: none;
+  .ui-bottom-left {
+    left: 24px;
+  }
+
+  .ui-status.menu-open {
+    z-index: 30;
   }
 
   .ui-links {
@@ -323,31 +358,13 @@ button:focus-visible {
 
   .ui-hamburger {
     display: flex;
+    padding-right: 0;
   }
-}
 
-/* Large left-side headline */
-.ui-headline {
-  position: fixed;
-  top: 28%;
-  left: 32px;
-  z-index: 11;
-  line-height: 0.9;
-  pointer-events: auto;
-  transition: opacity 0.3s ease;
-}
+  .ui-social {
+    right: 24px;
+  }
 
-.ui-headline-top,
-.ui-headline-bottom {
-  font-family: "Staff X Wide", sans-serif;
-  font-size: clamp(36px, 5.5vw, 90px);
-  color: #ffffff;
-  pointer-events: none;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-}
-
-@media (max-width: 768px) {
   .ui-headline {
     top: 22%;
     left: 24px;
@@ -356,24 +373,17 @@ button:focus-visible {
   .ui-headline-top,
   .ui-headline-bottom {
     font-size: clamp(36px, 8vw, 80px);
+    line-height: 1.05;
+  }
+
+  .ui-intro {
+    margin-top: 16px;
   }
 
   .ui-headline.menu-open {
     opacity: 0;
     pointer-events: none;
   }
-}
-
-/* Presentation paragraph under headline */
-.ui-intro {
-  max-width: 50ch;
-  margin-top: 32px;
-  font-family: "Satoshi", sans-serif;
-  font-size: 18px;
-  font-weight: 300;
-  line-height: 1.6;
-  color: #fff;
-  letter-spacing: 0.02em;
 }
 
 /* Reduced motion */

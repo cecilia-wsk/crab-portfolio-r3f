@@ -74,7 +74,7 @@ export default function App() {
 
         <a
           href="mailto:cecilia.wielonsky@gmail.com?subject=I%20want%20to%20collaborate%20on%20a%20creative%20project"
-          className="ui-status ui-bottom-left"
+          className={`ui-status ui-bottom-left ${isMenuOpen ? "menu-open" : ""}`}
         >
           AVAILABLE FOR WORK
           <span className="ui-dot ui-dot--green" />
