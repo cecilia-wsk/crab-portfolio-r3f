@@ -74,6 +74,8 @@ export default function App() {
 
         <a
           href="mailto:cecilia.wielonsky@gmail.com?subject=I%20want%20to%20collaborate%20on%20a%20creative%20project"
+          target="_blank"
+          rel="noopener noreferrer"
           className={`ui-status ui-bottom-left ${isMenuOpen ? "menu-open" : ""}`}
         >
           AVAILABLE FOR WORK
@@ -140,8 +142,12 @@ export default function App() {
         </div>
 
         <div className={`ui-headline ${isMenuOpen ? "menu-open" : ""}`}>
-          <div className="ui-headline-top">Creative</div>
-          <div className="ui-headline-bottom">Developer</div>
+          <div className="ui-headline-line">
+            <div className="ui-headline-top">Creative</div>
+          </div>
+          <div className="ui-headline-line">
+            <div className="ui-headline-bottom">Developer</div>
+          </div>
           <p className="ui-intro">
             I'm a french javascript enthusiast.
             <br /> I love experimenting with lights, colors and maths.

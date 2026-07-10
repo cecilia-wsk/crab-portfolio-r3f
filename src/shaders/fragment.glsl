@@ -6,7 +6,7 @@ void main() {
 
   float isMobile = step(uResolution.x, 768.0);
 
-  vec4 desktopColor = vec4(1.0, 1.0, 1.0, 0.9);
+  vec4 desktopColor = vec4(1.0, 1.0, 1.0, 0.4);
   vec4 mobileColor  = vec4(1.0, 0.0, 0.0, 0.4);
 
   gl_FragColor = mix(desktopColor, mobileColor, isMobile);
