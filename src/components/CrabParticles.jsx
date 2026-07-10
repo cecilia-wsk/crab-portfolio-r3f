@@ -5,6 +5,8 @@ import * as THREE from "three";
 import vertexParticles from "../shaders/vertexParticles.glsl";
 import fragmentShader from "../shaders/fragment.glsl";
 
+const BASE_ROTATION_Y = -Math.PI * 0.92;
+
 export default function CrabParticles({ mouseRef }) {
   const groupRef = useRef();
   const materialRef = useRef();
@@ -17,14 +19,14 @@ export default function CrabParticles({ mouseRef }) {
     scene.traverse((child) => {
       if (!geo && child.isMesh) {
         geo = child.geometry.clone();
-        geo.scale(0.3, 0.3, 0.3);
+        geo.scale(0.6, 0.6, 0.6);
         geo.translate(0, -0.5, 0);
       }
     });
 
     if (geo) {
       const pos = geo.attributes.position;
-      const stride = 6; // integer only: keep every 4th vertex
+      const stride = 4; // integer only: keep every 4th vertex
       const count = Math.floor(pos.count / stride);
       const reduced = new Float32Array(count * 3);
 
@@ -81,8 +83,8 @@ export default function CrabParticles({ mouseRef }) {
     }
 
     if (groupRef.current) {
-      const targetX = mouseRef.current.y * 0.1;
-      const targetY = mouseRef.current.x * 0.1;
+      const targetX = mouseRef.current.y * 0.05;
+      const targetY = mouseRef.current.x * 0.05 + BASE_ROTATION_Y;
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
         targetX,
@@ -99,7 +101,11 @@ export default function CrabParticles({ mouseRef }) {
   if (!geometry) return null;
 
   return (
-    <group ref={groupRef}>
+    <group
+      ref={groupRef}
+      rotation={[0, BASE_ROTATION_Y, 0]}
+      position={[-3, 0, 0]}
+    >
       <points geometry={geometry}>
         <shaderMaterial
           ref={materialRef}

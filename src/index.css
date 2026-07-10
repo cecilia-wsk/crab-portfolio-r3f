@@ -1,5 +1,21 @@
+@font-face {
+  font-family: "Maison Neue Mono";
+  src: url("/fonts/MaisonNeueMono.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Staff X Wide";
+  src: url("/fonts/StaffXWide.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Satoshi", Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
@@ -46,10 +62,327 @@ body,
   position: fixed;
   inset: 0;
   z-index: 10;
+}
+
+/* Focus rings (WCAG 2.4.7) */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #ff0000;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ─── Top navigation bar ─── */
+.ui-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px;
+  font-family: "Satoshi", Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  z-index: 30;
+}
+
+.ui-brand {
+  display: flex;
+  align-items: center;
+}
+
+.ui-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-status {
+  position: relative;
+  text-decoration: none;
+  font-size: 11px;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.ui-status::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition:
+    transform 0.25s ease,
+    transform-origin 0s;
+}
+
+.ui-status:hover {
+  color: #ffffff;
+}
+
+.ui-status:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.ui-bottom-left {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;
+  z-index: 11;
+}
+
+/* ─── Bottom-right social links ─── */
+.ui-social {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ui-social.menu-open {
+  z-index: 30;
+}
+
+.ui-social-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #a3a3a3;
+  font-family: "Satoshi", Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.ui-social-link:hover {
+  color: #ffffff;
+}
+
+.ui-social-arrow {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
   pointer-events: none;
 }
 
-.ui-layer a,
-.ui-layer button {
+.ui-social-link:hover .ui-social-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.ui-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff0000;
+}
+
+.ui-dot--green {
+  background: #4ade80;
+}
+
+.ui-links {
+  display: flex;
+  gap: 40px;
+}
+
+.ui-link {
+  position: relative;
+  text-decoration: none;
+  color: #a3a3a3;
+  display: flex;
+  align-items: center;
+  transition: color 0.25s ease;
+  cursor: pointer;
+  padding: 8px; /* touch-target padding */
+  min-height: 44px; /* WCAG 2.5.5 */
+}
+
+.ui-link::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  width: calc(100% - 16px);
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition:
+    transform 0.25s ease,
+    transform-origin 0s;
+}
+
+.ui-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.ui-link:hover {
+  color: #ffffff;
+}
+
+.ui-num {
+  color: #ff0000;
+  padding-right: 6px;
+  font-family:
+    "Maison Neue Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+}
+
+/* Hamburger (hidden on desktop) */
+.ui-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 30;
+}
+
+.ui-hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #a3a3a3;
+  border-radius: 1px;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+/* ─── Mobile adaptations ─── */
+@media (max-width: 768px) {
+  .ui-nav {
+    padding: 20px 24px;
+  }
+
+  .ui-status {
+    display: none;
+  }
+
+  .ui-links {
+    position: fixed;
+    inset: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 20;
+    transition: opacity 0.3s ease;
+  }
+
+  .ui-links.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ui-link {
+    font-size: 16px;
+    min-height: 48px;
+    gap: 10px;
+    min-width: 140px;
+  }
+
+  .ui-num {
+    font-size: 15px;
+  }
+
+  .ui-hamburger {
+    display: flex;
+  }
+}
+
+/* Large left-side headline */
+.ui-headline {
+  position: fixed;
+  top: 28%;
+  left: 32px;
+  z-index: 11;
+  line-height: 0.9;
   pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+.ui-headline-top,
+.ui-headline-bottom {
+  font-family: "Staff X Wide", sans-serif;
+  font-size: clamp(36px, 5.5vw, 90px);
+  color: #ffffff;
+  pointer-events: none;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .ui-headline {
+    top: 22%;
+    left: 24px;
+  }
+
+  .ui-headline-top,
+  .ui-headline-bottom {
+    font-size: clamp(36px, 8vw, 80px);
+  }
+
+  .ui-headline.menu-open {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* Presentation paragraph under headline */
+.ui-intro {
+  max-width: 50ch;
+  margin-top: 32px;
+  font-family: "Satoshi", sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

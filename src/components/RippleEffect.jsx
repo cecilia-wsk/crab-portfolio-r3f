@@ -122,6 +122,11 @@ export default function RippleEffect() {
   const stateRef = useRef(null);
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (prefersReducedMotion) return;
+
     const dpr = gl.getPixelRatio();
     const bufSize = new THREE.Vector2();
     gl.getDrawingBufferSize(bufSize);
@@ -206,7 +211,7 @@ export default function RippleEffect() {
       uniforms: {
         tDiffuse: { value: null },
         tRipple: { value: null },
-        distort: { value: new THREE.Vector2(0.001, 0.001) },
+        distort: { value: new THREE.Vector2(0.0, 0.0) },
       },
       vertexShader: rippleVertex,
       fragmentShader: rippleFragment,
@@ -219,10 +224,13 @@ export default function RippleEffect() {
     const state = { composer, rt, pool, ripples: [] };
     stateRef.current = state;
 
-    // 7. Click handler
+    // Click trigger
     const handleClick = (e) => {
-      if (state.ripples.length >= MAX_RIPPLES) return;
-      state.ripples.push({
+      if (!stateRef.current) return;
+      const st = stateRef.current;
+      if (st.ripples.length >= MAX_RIPPLES) return;
+      const dpr = gl.getPixelRatio();
+      st.ripples.push({
         age: 0,
         position: new THREE.Vector2(e.clientX * dpr, e.clientY * dpr),
         color: new THREE.Vector2(
@@ -233,7 +241,7 @@ export default function RippleEffect() {
     };
     window.addEventListener("click", handleClick);
 
-    // 8. Override renderer
+    // 7. Override renderer
     gl.render = () => {
       composer.render();
     };
@@ -311,9 +319,11 @@ export default function RippleEffect() {
       entry.material.uniforms.uScale.value = sz;
       entry.material.uniforms.uWaveRadius.value = waveRadius;
       entry.material.uniforms.uReachMin.value = rippleParams.reachMin;
-      entry.material.uniforms.uPulseWidthFactor.value = rippleParams.pulseWidthFactor;
+      entry.material.uniforms.uPulseWidthFactor.value =
+        rippleParams.pulseWidthFactor;
       entry.material.uniforms.uTendrilMin.value = rippleParams.tendrilMin;
-      entry.material.uniforms.uDispStrength.value = rippleParams.displacementStrength;
+      entry.material.uniforms.uDispStrength.value =
+        rippleParams.displacementStrength;
     }
   });
 

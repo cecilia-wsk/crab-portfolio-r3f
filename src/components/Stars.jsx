@@ -1,8 +1,8 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import starsVertex from '../shaders/starsVertex.glsl';
-import starsFragment from '../shaders/starsFragment.glsl';
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+import starsVertex from "../shaders/starsVertex.glsl";
+import starsFragment from "../shaders/starsFragment.glsl";
 
 const COUNT = 10000;
 

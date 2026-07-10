@@ -89,7 +89,7 @@ vec3 curl(float x, float y, float z) {
 void main() {
   vec3 newPos = position;
   float f = 1.5;
-  float amplitude = 1.35;
+  float amplitude = 1.55;
   float maxDistance = 3.0;
 
   vec3 target = position + curl(newPos.x * f, newPos.y * f, newPos.z * f) * amplitude;
@@ -97,14 +97,13 @@ void main() {
   newPos = mix(position, target, pow(d, 4.0));
 
   vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
-  // gl_PointSize = 0.1;
-
-  // Calculate particle size
-  float particleSize = 0.25; // Adjust this formula as needed
-  // Adjust particle size based on screen resolution
-  particleSize *= min(uResolution.a, uResolution.b)/min(16.,9.);
-  // Set gl_PointSize
-  gl_PointSize = particleSize;
+  gl_PointSize = .25 * (1.0 / -mvPosition.z);
+  // // Calculate particle size
+  // float particleSize = 0.25; // Adjust this formula as needed
+  // // Adjust particle size based on screen resolution
+  // particleSize *= min(uResolution.a, uResolution.b)/min(16.,9.);
+  // // Set gl_PointSize
+  // gl_PointSize = particleSize;
   
   gl_Position = projectionMatrix * mvPosition;
 }

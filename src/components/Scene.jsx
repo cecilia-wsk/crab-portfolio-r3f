@@ -1,13 +1,23 @@
-import { Suspense } from 'react';
-import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
-import CrabParticles from './CrabParticles';
-import Stars from './Stars';
-import RippleEffect from './RippleEffect';
+import { Suspense, useEffect } from "react";
+import { useThree } from "@react-three/fiber";
+import { PerspectiveCamera } from "@react-three/drei";
+import CrabParticles from "./CrabParticles";
+import Stars from "./Stars";
+import RippleEffect from "./RippleEffect";
+
+function CameraTarget() {
+  const { camera } = useThree();
+  useEffect(() => {
+    camera.lookAt(0, 0, 0);
+  }, [camera]);
+  return null;
+}
 
 export default function Scene({ mouseRef }) {
   return (
     <>
-      <color attach="background" args={['#0b0b0b']} />
+      <color attach="background" args={["#000000"]} />
+      <CameraTarget />
       <PerspectiveCamera
         makeDefault
         position={[0, 0, -6]}
@@ -15,7 +25,6 @@ export default function Scene({ mouseRef }) {
         near={0.1}
         far={1000}
       />
-      <OrbitControls enableDamping dampingFactor={0.05} />
       <Suspense fallback={null}>
         <CrabParticles mouseRef={mouseRef} />
       </Suspense>
