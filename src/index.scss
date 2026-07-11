@@ -85,25 +85,27 @@ body {
 .section {
   position: relative;
   min-height: 100vh;
-  padding: 120px 32px;
+  padding: 28vh 0;
   z-index: 10;
 }
 
 .section-title {
-  font-family: "Staff X Wide", sans-serif;
-  font-size: clamp(28px, 4vw, 56px);
+  font-family: "Maison Neue Mono", sans-serif;
+  font-size: clamp(28px, 4vw, 65px);
   text-transform: uppercase;
   color: #ffffff;
   margin-bottom: 32px;
-  letter-spacing: -0.02em;
+  line-height: 0.9;
 }
 
 .section-body {
   font-family: "Satoshi", sans-serif;
-  font-size: clamp(16px, 1.5vw, 20px);
+  font-size: clamp(14px, 2vw, 16px);
   line-height: 1.6;
-  color: #a3a3a3;
-  max-width: 60ch;
+  color: #ffffff;
+  p {
+    margin-top: 16px;
+  }
 }
 
 .section-link {
@@ -114,6 +116,13 @@ body {
 
 .section-link:hover {
   color: #ffffff;
+}
+
+.section.about {
+  text-align: left;
+  width: 600px;
+  max-width: 100%;
+  margin: 0 10% 0 auto;
 }
 
 /* Focus rings (WCAG 2.4.7) */
@@ -241,6 +250,18 @@ button:focus-visible {
   transform: translateX(0);
 }
 
+.about-reveal-resume {
+  margin-top: 24px;
+  display: flex;
+  justify-content: end;
+  .ui-social-arrow {
+    transform: translateY(-6px) rotate(135deg);
+  }
+  .ui-social-link:hover .ui-social-arrow {
+    transform: translateY(0) rotate(135deg);
+  }
+}
+
 .ui-dot {
   display: inline-block;
   width: 5px;
@@ -341,10 +362,9 @@ button:focus-visible {
 
 .ui-headline-top,
 .ui-headline-bottom {
-  font-family: "Staff X Wide", sans-serif;
-  font-size: clamp(36px, 5.5vw, 90px);
+  font-family: "Maison Neue Mono", sans-serif;
+  font-size: clamp(36px, 5.5vw, 100px);
   color: #ffffff;
-  letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
@@ -352,7 +372,7 @@ button:focus-visible {
   max-width: 50ch;
   margin-top: 32px;
   font-family: "Satoshi", sans-serif;
-  font-size: clamp(16px, 2vw, 22px);
+  font-size: clamp(14px, 2vw, 16px);
   font-weight: 300;
   line-height: 1.6;
   color: #fff;
@@ -382,11 +402,13 @@ button:focus-visible {
     gap: 24px;
     background: rgba(0, 0, 0, 0.8);
     z-index: 20;
+    pointer-events: none;
     transition: opacity 0.3s ease;
   }
 
   .ui-links.open {
     opacity: 1;
+    pointer-events: auto;
   }
 
   .ui-link {
@@ -414,7 +436,12 @@ button:focus-visible {
   }
 
   .section {
-    padding: 80px 24px;
+    padding: 24vh 24px;
+  }
+
+  .section-title {
+    font-size: clamp(24px, 5vw, 50px);
+    margin-bottom: 24px;
   }
 
   .ui-headline-top,
@@ -433,7 +460,6 @@ button:focus-visible {
 }
 
 /* Staggered headline reveal */
-.ui-intro,
 .ui-headline-line {
   overflow: hidden;
   display: block;
