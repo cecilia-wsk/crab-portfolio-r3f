@@ -166,6 +166,7 @@ button:focus-visible {
   position: relative;
   text-decoration: none;
   font-size: 11px;
+  text-transform: uppercase;
   color: inherit;
   cursor: pointer;
   transition: color 0.25s ease;
@@ -222,7 +223,7 @@ button:focus-visible {
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: #a3a3a3;
+  color: rgba(255, 255, 255, 0.87);
   font-family: "Satoshi", Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 11px;
   font-weight: 400;
@@ -400,7 +401,7 @@ button:focus-visible {
     align-items: center;
     justify-content: center;
     gap: 24px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     z-index: 20;
     pointer-events: none;
     transition: opacity 0.3s ease;

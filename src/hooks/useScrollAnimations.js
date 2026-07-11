@@ -10,17 +10,17 @@ function addHeadlineExitTweens(tl) {
   tl.vars._headlineAdded = true;
   tl.to(
     ".ui-headline-top",
-    { yPercent: -110, duration: 0.5, ease: "power2.in" },
+    { yPercent: -110, duration: 0.5, ease: "power2.inOut" },
     0,
   );
   tl.to(
     ".ui-headline-bottom",
-    { yPercent: -110, duration: 0.5, ease: "power2.in" },
+    { yPercent: -110, duration: 0.5, ease: "power2.inOut" },
     0.05,
   );
   tl.to(
     ".ui-intro",
-    { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" },
+    { opacity: 0, y: -20, duration: 0.4, ease: "power2.inOut" },
     0,
   );
   ScrollTrigger.refresh();
@@ -111,12 +111,12 @@ export default function useScrollAnimations(heroRef, crabRef) {
 
         crabTl.to(
           crabGroup.position,
-          { x: 3, y: 0, z: 0, duration: 1, ease: "power2.easeIn" },
+          { x: 3.5, y: 0, z: 0, duration: 1, ease: "power2.in" },
           0,
         );
         crabTl.to(
           crabGroup.scale,
-          { x: 0.9, y: 0.9, z: 0.9, duration: 1, ease: "power2.easeIn" },
+          { x: 0.9, y: 0.9, z: 0.9, duration: 1, ease: "power2.in" },
           0,
         );
         crabTl.to(
@@ -150,9 +150,9 @@ export default function useScrollAnimations(heroRef, crabRef) {
               id: "about-pin",
               trigger: aboutSection,
               start: "top 0%",
-              end: "+=80%",
+              end: "+=100%",
               pin: true,
-              scrub: 0.8,
+              scrub: 0.5,
               anticipatePin: 1,
             },
           });
@@ -161,56 +161,79 @@ export default function useScrollAnimations(heroRef, crabRef) {
           aboutTl.fromTo(
             aboutTitle,
             { yPercent: 110 },
-            { yPercent: 0, duration: 0.25, ease: "power4.out" },
+            { yPercent: 0, duration: 0.25, ease: "power2.inOut" },
             0,
           );
 
           aboutTl.fromTo(
             aboutPara1,
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" },
+            { opacity: 1, y: 0, duration: 0.2, ease: "power2.inOut" },
             0.15,
           );
 
           aboutTl.fromTo(
             aboutPara2,
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" },
+            { opacity: 1, y: 0, duration: 0.2, ease: "power2.inOut" },
             0.25,
           );
 
           aboutTl.fromTo(
             aboutResume,
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" },
+            { opacity: 1, y: 0, duration: 0.2, ease: "power2.inOut" },
             0.35,
           );
 
           // ── EXIT (reverse order, matching entrance style) ──
           aboutTl.to(
             aboutResume,
-            { opacity: 0, y: -20, duration: 0.15, ease: "power2.in" },
+            { opacity: 0, y: -20, duration: 0.2, ease: "power2.inOut" },
             0.6,
           );
 
           aboutTl.to(
             aboutPara2,
-            { opacity: 0, y: -20, duration: 0.15, ease: "power2.in" },
+            { opacity: 0, y: -20, duration: 0.2, ease: "power2.inOut" },
             0.66,
           );
 
           aboutTl.to(
             aboutPara1,
-            { opacity: 0, y: -20, duration: 0.15, ease: "power2.in" },
+            { opacity: 0, y: -20, duration: 0.2, ease: "power2.inOut" },
             0.72,
           );
 
           aboutTl.to(
             aboutTitle,
-            { yPercent: -110, duration: 0.2, ease: "power2.in" },
+            { yPercent: -110, duration: 0.25, ease: "power2.inOut" },
             0.78,
           );
         }
+
+        // 4) Auto-update URL on scroll
+        const urlMap = [
+          { selector: ".hero", path: "/" },
+          { selector: ".section.about", path: "/about" },
+          { selector: ".section.works", path: "/works" },
+          { selector: ".section.contact", path: "/contact" },
+        ];
+
+        urlMap.forEach(({ selector, path }) => {
+          const el = document.querySelector(selector);
+          if (!el) return;
+          ScrollTrigger.create({
+            trigger: el,
+            start: "top center",
+            end: "bottom center",
+            onToggle: (self) => {
+              if (self.isActive && window.location.pathname !== path) {
+                history.replaceState(null, "", path);
+              }
+            },
+          });
+        });
       }, hero);
     };
 

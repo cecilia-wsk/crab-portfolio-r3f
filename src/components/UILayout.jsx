@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
@@ -11,8 +11,10 @@ export default function UILayout({ crabRef }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const heroRef = useRef();
 
-  const scrollToSection = (id) => {
-    const el = document.querySelector(id);
+  const scrollToSection = (idOrPath) => {
+    // map "/about" → "#about" if needed
+    const hash = idOrPath.startsWith("/") ? "#" + idOrPath.slice(1) : idOrPath;
+    const el = document.querySelector(hash);
     if (!el) return;
 
     const st = ScrollTrigger.getAll().find(
@@ -21,27 +23,48 @@ export default function UILayout({ crabRef }) {
 
     if (st) {
       // Pinned section: land ~35 % into its timeline so entrance is visible
-      const target = st.start + (st.end - st.start) * 0.47;
+      const target = st.start + (st.end - st.start) * 0.5;
       gsap.to(window, {
-        duration: 1.2,
+        duration: 2.25,
         scrollTo: { y: target, autoKill: false },
         ease: "power2.inOut",
       });
     } else {
       gsap.to(window, {
-        duration: 1,
+        duration: 2.25,
         scrollTo: { y: el, offsetY: 0, autoKill: false },
         ease: "power2.inOut",
       });
     }
   };
 
+  const goTo = (pathname) => {
+    history.pushState(null, "", pathname);
+    scrollToSection(pathname);
+  };
+
+  // ── Handle direct URL access (cecialiawielonsky.com/about) ──
+  useEffect(() => {
+    const map = {
+      "/about": "#about",
+      "/works": "#works",
+      "/contact": "#contact",
+    };
+    const target = map[window.location.pathname];
+    if (target) {
+      // debounce: wait a tick so ScrollTrigger + loader are ready
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollToSection(target));
+      });
+    }
+  }, []);
+
   useScrollAnimations(heroRef, crabRef);
 
   return (
     <>
       <nav className="ui-nav" aria-label="Main">
-        <a className="ui-brand">CECILIA WIELONSKY</a>
+        <a className="ui-brand">Cecilia Wielonsky</a>
 
         <button
           type="button"
@@ -60,34 +83,34 @@ export default function UILayout({ crabRef }) {
           aria-hidden={!isMenuOpen}
         >
           <a
-            href="#about"
+            href="/about"
             className="ui-link"
             onClick={(e) => {
               e.preventDefault();
               setIsMenuOpen(false);
-              scrollToSection("#about");
+              goTo("/about");
             }}
           >
             <span className="ui-num">01</span>ABOUT
           </a>
           <a
-            href="#works"
+            href="/works"
             className="ui-link"
             onClick={(e) => {
               e.preventDefault();
               setIsMenuOpen(false);
-              scrollToSection("#works");
+              goTo("/works");
             }}
           >
             <span className="ui-num">02</span>WORKS
           </a>
           <a
-            href="#contact"
+            href="/contact"
             className="ui-link"
             onClick={(e) => {
               e.preventDefault();
               setIsMenuOpen(false);
-              scrollToSection("#contact");
+              goTo("/contact");
             }}
           >
             <span className="ui-num">03</span>CONTACT
@@ -101,7 +124,7 @@ export default function UILayout({ crabRef }) {
         target="_blank"
         rel="noopener noreferrer"
       >
-        AVAILABLE FOR WORK
+        Available for work
         <span className="ui-dot ui-dot--green" />
       </a>
 
@@ -118,7 +141,7 @@ export default function UILayout({ crabRef }) {
             className="ui-social-arrow"
             aria-hidden="true"
           />
-          EMAIL
+          Email
         </a>
         <a
           href="https://www.linkedin.com/in/cecilia-wielonsky/"
@@ -132,7 +155,7 @@ export default function UILayout({ crabRef }) {
             className="ui-social-arrow"
             aria-hidden="true"
           />
-          LINKEDIN
+          Linkedin
         </a>
         <a
           href="https://www.instagram.com/cecilia_wsk/"
@@ -146,7 +169,7 @@ export default function UILayout({ crabRef }) {
             className="ui-social-arrow"
             aria-hidden="true"
           />
-          INSTAGRAM
+          Instagram
         </a>
         <a
           href="https://github.com/cecilia-wsk/"
@@ -160,7 +183,7 @@ export default function UILayout({ crabRef }) {
             className="ui-social-arrow"
             aria-hidden="true"
           />
-          GITHUB
+          Github
         </a>
       </div>
 
