@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
+// ─── PROJECT DATA ───
 const PROJECTS = [
   {
     id: "singlot",
@@ -25,7 +26,7 @@ const PROJECTS = [
     category: "Web Experience",
     year: "2023",
     tags: ["Animsition", "Foundation", "jQuery", "JavaScript"],
-    url: "#",
+    url: "https://lazyeyes.cool/",
     image: "/assets/lazyeyes.webp",
   },
   {
@@ -124,6 +125,18 @@ export default function WorksPage() {
   const [hovered, setHovered] = useState(null);
   const [mouseY, setMouseY] = useState(0);
   const imgRef = useRef(null);
+
+  // Toggle body class for z-index orchestration with status/social
+  useEffect(() => {
+    document.body.classList.add("is-works");
+    return () => document.body.classList.remove("is-works");
+  }, []);
+
+  // Toggle body class for z-index orchestration with status/social
+  useEffect(() => {
+    document.body.classList.add("is-works");
+    return () => document.body.classList.remove("is-works");
+  }, []);
 
   // Track cursor Y for the floating image
   const onMouseMove = useCallback((e) => {

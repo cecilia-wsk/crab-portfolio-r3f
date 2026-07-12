@@ -95,8 +95,10 @@ export default function Shell({ crabRef, children }) {
   const [location] = useLocation();
   const [displayed, setDisplayed] = useState(location);
   const [renderIncoming, setRenderIncoming] = useState(false);
+  const [incomingRoute, setIncomingRoute] = useState(null);
   const isTransitioningRef = useRef(false);
   const targetRef = useRef(null);
+  const tlRef = useRef(null);
   const containerRef = useRef(null);
 
   // On first mount: snap crab to match current route (retry until R3F ref exists)
@@ -129,16 +131,32 @@ export default function Shell({ crabRef, children }) {
   useEffect(() => {
     const from = displayed;
     const to = location;
-    if (from === to || isTransitioningRef.current) return;
+    if (from === to) return;
+
+    if (isTransitioningRef.current) {
+      // Mid-click: kill running timeline, snap to where we were going, then start fresh
+      if (tlRef.current) {
+        tlRef.current.kill();
+        tlRef.current = null;
+      }
+      const snapTo = targetRef.current?.to ?? from;
+      setDisplayed(snapTo);
+      isTransitioningRef.current = false;
+      setRenderIncoming(false);
+      setIncomingRoute(null);
+      targetRef.current = null;
+      // Let React flush, then re-run this effect for the new location
+      return;
+    }
 
     isTransitioningRef.current = true;
     const profile = resolveProfile(from, to);
     targetRef.current = { from, to, profile };
+    setIncomingRoute(to);
     setRenderIncoming(true);
 
     const g = crabRef.current;
     if (g) {
-      // Animate crab based on destination, regardless of origin
       if (to === "/about") animateCrabToAbout(g, BASE_ROTATION_Y);
       else if (to === "/") animateCrabToHome(g, BASE_ROTATION_Y);
     }
@@ -161,9 +179,12 @@ export default function Shell({ crabRef, children }) {
           setDisplayed(to);
           isTransitioningRef.current = false;
           setRenderIncoming(false);
+          setIncomingRoute(null);
           targetRef.current = null;
+          tlRef.current = null;
         },
       });
+      tlRef.current = tl;
 
       // ─── OUTGOING page ───
       if (outgoing) {
@@ -291,7 +312,10 @@ export default function Shell({ crabRef, children }) {
       }
     }, container);
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      tlRef.current = null;
+    };
   }, [renderIncoming]);
 
   return (
@@ -306,9 +330,9 @@ export default function Shell({ crabRef, children }) {
       {/* Incoming layer — only during transition */}
       {renderIncoming && (
         <div className="page page--incoming">
-          {location === "/" && children("/")}
-          {location === "/about" && children("/about")}
-          {location === "/works" && children("/works")}
+          {incomingRoute === "/" && children("/")}
+          {incomingRoute === "/about" && children("/about")}
+          {incomingRoute === "/works" && children("/works")}
         </div>
       )}
     </div>
