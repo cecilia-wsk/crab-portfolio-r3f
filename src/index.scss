@@ -6,14 +6,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Staff X Wide";
-  src: url("/fonts/StaffXWide.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   font-family: "Satoshi", Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -45,16 +37,17 @@
 html,
 body {
   width: 100%;
-  min-height: 100vh;
-  overflow-y: auto;
+  height: 100%;
+  overflow: hidden; /* prevent body scroll — pages are full-viewport */
   background: #0b0b0b;
 }
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
 }
 
+/* ─── 3D Canvas ─── */
 .canvas-wrapper {
   position: fixed;
   inset: 0;
@@ -67,28 +60,77 @@ body {
   height: 100vh;
 }
 
-/* ─── Scrollable page content ─── */
-.page-content {
-  position: relative;
+/* ─── Page shell ─── */
+.shell {
+  position: fixed;
+  inset: 0;
   z-index: 10;
+  pointer-events: none; /* let clicks pass through empty areas */
 }
 
-.hero {
-  position: relative;
-  min-height: 100vh;
+.shell .page {
+  pointer-events: auto;
+}
+
+/* ─── Base page style (full viewport, centered content) ─── */
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 28vh 32px 32px;
+  background: transparent;
 }
 
-.section {
-  position: relative;
-  min-height: 100vh;
-  padding: 28vh 0;
-  z-index: 10;
+/* ─── Home page ─── */
+.home-page {
+  /* inherits base .page */
 }
 
+/* ─── About page ─── */
+.about-page {
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 10%;
+}
+
+.about-content {
+  width: 600px;
+  max-width: 100%;
+}
+
+/* ─── Large left-side headline (shared) ─── */
+.ui-headline {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  line-height: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.ui-headline-top,
+.ui-headline-bottom {
+  font-family: "Maison Neue Mono", sans-serif;
+  font-size: clamp(36px, 5.5vw, 100px);
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.ui-intro {
+  max-width: 50ch;
+  margin-top: 32px;
+  font-family: "Satoshi", sans-serif;
+  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: #fff;
+}
+
+/* ─── Section typography (shared with old styles) ─── */
 .section-title {
   font-family: "Maison Neue Mono", sans-serif;
   font-size: clamp(28px, 4vw, 65px);
@@ -103,6 +145,7 @@ body {
   font-size: clamp(14px, 2vw, 16px);
   line-height: 1.6;
   color: #ffffff;
+  max-width: 600px;
   p {
     margin-top: 16px;
   }
@@ -113,19 +156,37 @@ body {
   text-decoration: none;
   transition: color 0.25s ease;
 }
-
 .section-link:hover {
   color: #ffffff;
 }
 
-.section.about {
-  text-align: left;
-  width: 600px;
-  max-width: 100%;
-  margin: 0 10% 0 auto;
+/* ─── About-specific content ─── */
+.about-title-wrapper {
+  overflow: hidden;
+  line-height: 0.9;
 }
 
-/* Focus rings (WCAG 2.4.7) */
+.about-title {
+  display: block;
+}
+
+.about-body {
+  max-width: 600px;
+}
+
+.about-reveal-resume {
+  margin-top: 24px;
+  display: flex;
+  justify-content: end;
+  .ui-social-arrow {
+    transform: translateY(-6px) rotate(135deg);
+  }
+  .ui-social-link:hover .ui-social-arrow {
+    transform: translateY(0) rotate(135deg);
+  }
+}
+
+/* ─── Focus rings (WCAG 2.4.7) ─── */
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid #ff0000;
@@ -148,26 +209,37 @@ button:focus-visible {
   font-weight: 400;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  z-index: 30;
+  z-index: 100;
 }
 
 .ui-brand {
   display: flex;
   align-items: center;
+  text-decoration: none;
+  color: #a3a3a3;
+  position: relative;
+  z-index: 100;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.ui-brand:hover {
+  color: #ffffff;
+}
+
+.ui-brand:hover {
+  color: #ffffff;
 }
 
 .ui-status {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.ui-status {
   position: relative;
   text-decoration: none;
   font-size: 11px;
   text-transform: uppercase;
-  color: inherit;
+  color: #a3a3a3;
   cursor: pointer;
   transition: color 0.25s ease;
 }
@@ -200,7 +272,7 @@ button:focus-visible {
   position: fixed;
   bottom: 32px;
   left: 32px;
-  z-index: 11;
+  z-index: 101;
 }
 
 /* ─── Bottom-right social links ─── */
@@ -208,14 +280,14 @@ button:focus-visible {
   position: fixed;
   bottom: 32px;
   right: 32px;
-  z-index: 11;
+  z-index: 101;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
 .ui-social.menu-open {
-  z-index: 30;
+  z-index: 100;
 }
 
 .ui-social-link {
@@ -223,7 +295,7 @@ button:focus-visible {
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.87);
+  color: #a3a3a3;
   font-family: "Satoshi", Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 11px;
   font-weight: 400;
@@ -251,18 +323,6 @@ button:focus-visible {
   transform: translateX(0);
 }
 
-.about-reveal-resume {
-  margin-top: 24px;
-  display: flex;
-  justify-content: end;
-  .ui-social-arrow {
-    transform: translateY(-6px) rotate(135deg);
-  }
-  .ui-social-link:hover .ui-social-arrow {
-    transform: translateY(0) rotate(135deg);
-  }
-}
-
 .ui-dot {
   display: inline-block;
   width: 5px;
@@ -288,8 +348,8 @@ button:focus-visible {
   align-items: center;
   transition: color 0.25s ease;
   cursor: pointer !important;
-  padding: 8px; /* touch-target padding */
-  min-height: 44px; /* WCAG 2.5.5 */
+  padding: 8px;
+  min-height: 44px;
 }
 
 .ui-link::after {
@@ -316,6 +376,10 @@ button:focus-visible {
   color: #ffffff;
 }
 
+.ui-link.active {
+  color: #ffffff;
+}
+
 .ui-num {
   color: #ff0000;
   padding-right: 6px;
@@ -338,7 +402,7 @@ button:focus-visible {
   border: none;
   cursor: pointer;
   position: relative;
-  z-index: 30;
+  z-index: 100;
 }
 
 .ui-hamburger span {
@@ -352,33 +416,142 @@ button:focus-visible {
     opacity 0.3s ease;
 }
 
-/* Large left-side headline */
-.ui-headline {
-  width: 90%;
+/* Staggered headline reveal */
+.ui-headline-line {
+  overflow: hidden;
+  display: block;
+}
+
+/* Cursor fix for nav links */
+.ui-link,
+.ui-link:hover,
+.ui-link * {
+  cursor: pointer !important;
+}
+
+/* ─── Works content styles (kept for later) ─── */
+.works-inner {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  line-height: 0.9;
-  transition: opacity 0.3s ease;
 }
 
-.ui-headline-top,
-.ui-headline-bottom {
+.works-title {
   font-family: "Maison Neue Mono", sans-serif;
-  font-size: clamp(36px, 5.5vw, 100px);
-  color: #ffffff;
+  font-size: clamp(36px, 5.5vw, 80px);
   text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 48px;
+  line-height: 0.9;
 }
 
-.ui-intro {
-  max-width: 50ch;
-  margin-top: 32px;
+.works-category {
+  font-family: "Maison Neue Mono", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #a3a3a3;
+  margin-bottom: 24px;
+}
+
+.works-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.works-project {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 24px;
+}
+
+.works-project-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.works-project-num {
+  font-family:
+    "Maison Neue Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: #ff0000;
+  letter-spacing: 0.12em;
+}
+
+.works-project-name {
+  font-family: "Maison Neue Mono", sans-serif;
+  font-size: clamp(18px, 2.5vw, 28px);
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.works-project-meta {
   font-family: "Satoshi", sans-serif;
-  font-size: clamp(14px, 2vw, 16px);
-  font-weight: 300;
-  line-height: 1.6;
-  color: #fff;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a3a3a3;
+  margin-bottom: 12px;
 }
 
+.works-project-desc {
+  font-family: "Satoshi", sans-serif;
+  font-size: clamp(13px, 1.5vw, 15px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 65ch;
+  margin-bottom: 16px;
+}
+
+.works-project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.works-tag {
+  font-family:
+    "Maison Neue Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+.works-project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Satoshi", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ff0000;
+  text-decoration: none;
+  transition: color 0.25s ease;
+
+  svg {
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    color: #ffffff;
+    svg {
+      transform: translate(2px, -2px);
+    }
+  }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .ui-nav {
     padding: 20px 24px;
@@ -386,10 +559,6 @@ button:focus-visible {
 
   .ui-bottom-left {
     left: 24px;
-  }
-
-  .ui-status.menu-open {
-    z-index: 30;
   }
 
   .ui-links {
@@ -402,7 +571,7 @@ button:focus-visible {
     justify-content: center;
     gap: 24px;
     background: rgba(0, 0, 0, 0.9);
-    z-index: 20;
+    z-index: 90;
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
@@ -432,17 +601,13 @@ button:focus-visible {
     right: 24px;
   }
 
-  .hero {
+  .page {
     padding: 24vh 24px 24px;
   }
 
-  .section {
-    padding: 24vh 24px;
-  }
-
-  .section-title {
-    font-size: clamp(24px, 5vw, 50px);
-    margin-bottom: 24px;
+  .about-page {
+    padding-right: 24px;
+    align-items: flex-start;
   }
 
   .ui-headline-top,
@@ -458,19 +623,6 @@ button:focus-visible {
   .ui-headline.menu-open {
     opacity: 0;
   }
-}
-
-/* Staggered headline reveal */
-.ui-headline-line {
-  overflow: hidden;
-  display: block;
-}
-
-/* Cursor fix for nav links */
-.ui-link,
-.ui-link:hover,
-.ui-link * {
-  cursor: pointer !important;
 }
 
 /* Reduced motion */

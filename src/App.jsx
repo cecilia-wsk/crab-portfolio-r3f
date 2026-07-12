@@ -1,8 +1,13 @@
 import { useRef, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
+import { Canvas } from "@react-three/fiber";
+import { Router } from "wouter";
+
 import Scene from "./components/Scene";
-import UILayout from "./components/UILayout";
+import Nav from "./components/Nav";
+import Shell from "./components/Shell";
+import HomePage from "./components/HomePage";
+import AboutPage from "./components/AboutPage";
 
 export default function App() {
   const mouseRef = useRef(new THREE.Vector2());
@@ -18,7 +23,7 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <Router>
       <div className="canvas-wrapper">
         <Canvas
           tabIndex={-1}
@@ -29,7 +34,85 @@ export default function App() {
         </Canvas>
       </div>
 
-      <UILayout crabRef={crabRef} />
-    </>
+      <Nav />
+
+      {/* Availability status */}
+      <a
+        className="ui-status ui-bottom-left"
+        href="mailto:cecilia.wielonsky@gmail.com?subject=I%20want%20to%20collaborate%20on%20a%20creative%20project"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Available for work
+        <span className="ui-dot ui-dot--green" />
+      </a>
+
+      {/* Social links */}
+      <div className="ui-social">
+        <a
+          href="mailto:cecilia.wielonsky@gmail.com"
+          className="ui-social-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="/assets/arrow-external.svg"
+            alt=""
+            className="ui-social-arrow"
+            aria-hidden="true"
+          />
+          Email
+        </a>
+        <a
+          href="https://www.linkedin.com/in/cecilia-wielonsky/"
+          className="ui-social-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="/assets/arrow-external.svg"
+            alt=""
+            className="ui-social-arrow"
+            aria-hidden="true"
+          />
+          Linkedin
+        </a>
+        <a
+          href="https://www.instagram.com/cecilia_wsk/"
+          className="ui-social-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="/assets/arrow-external.svg"
+            alt=""
+            className="ui-social-arrow"
+            aria-hidden="true"
+          />
+          Instagram
+        </a>
+        <a
+          href="https://github.com/cecilia-wsk/"
+          className="ui-social-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="/assets/arrow-external.svg"
+            alt=""
+            className="ui-social-arrow"
+            aria-hidden="true"
+          />
+          Github
+        </a>
+      </div>
+
+      <Shell crabRef={crabRef}>
+        {(page) => {
+          if (page === "/about") return <AboutPage />;
+          return <HomePage />;
+        }}
+      </Shell>
+    </Router>
   );
 }

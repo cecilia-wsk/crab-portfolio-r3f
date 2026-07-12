@@ -79,9 +79,12 @@ const CrabParticles = forwardRef(function CrabParticles({ mouseRef }, ref) {
       uniforms.uMouse.value.lerp(mouseRef.current, 0.1);
     }
 
-    if (ref.current && !ref.current.userData.isAnimating) {
+    if (ref.current && !ref.current.userData.isAnimating && !ref.current.userData.isTransitioning) {
+      const currentBaseRotation = typeof ref.current.userData.targetRotationY === 'number'
+        ? ref.current.userData.targetRotationY
+        : BASE_ROTATION_Y;
       const targetX = mouseRef.current.y * 0.05;
-      const targetY = mouseRef.current.x * 0.05 + BASE_ROTATION_Y;
+      const targetY = mouseRef.current.x * 0.05 + currentBaseRotation;
       ref.current.rotation.x = THREE.MathUtils.lerp(
         ref.current.rotation.x,
         targetX,
