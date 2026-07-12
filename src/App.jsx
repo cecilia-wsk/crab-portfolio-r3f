@@ -8,6 +8,7 @@ import Nav from "./components/Nav";
 import Shell from "./components/Shell";
 import HomePage from "./components/HomePage";
 import AboutPage from "./components/AboutPage";
+import WorksPage from "./components/WorksPage";
 
 export default function App() {
   const mouseRef = useRef(new THREE.Vector2());
@@ -110,6 +111,7 @@ export default function App() {
       <Shell crabRef={crabRef}>
         {(page) => {
           if (page === "/about") return <AboutPage />;
+          if (page === "/works") return <WorksPage />;
           return <HomePage />;
         }}
       </Shell>
