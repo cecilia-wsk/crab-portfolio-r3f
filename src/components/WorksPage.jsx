@@ -25,7 +25,7 @@ const PROJECTS = [
     category: "Web Experience",
     year: "2023",
     tags: ["Animsition", "Foundation", "jQuery", "JavaScript"],
-    url: "https://lazyeyes.cool/",
+    url: "#",
     image: "/assets/lazyeyes.webp",
   },
   {
@@ -139,7 +139,7 @@ export default function WorksPage() {
     <div className="page works-page">
       <div className="works-inner">
         <div className="works-title-wrapper">
-          <h1 className="works-title">Projects</h1>
+          <h1 className="works-title">Works</h1>
         </div>
 
         <div className="works-list">

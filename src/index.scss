@@ -467,12 +467,6 @@ button:focus-visible {
   gap: 0;
 }
 
-/* Spotlight dimming: non-hovered rows darker; hovered row brighter */
-.works-list:has(.works-project:hover) .works-project:not(:hover) {
-  opacity: 0.35;
-  transition: opacity 0.3s ease;
-}
-
 .works-project {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: opacity 0.3s ease;
@@ -489,8 +483,8 @@ button:focus-visible {
   gap: 32px;
   padding: 20px 0;
   text-decoration: none;
-  color: inherit;
-  transition: color 0.3s ease;
+  color: #a3a3a3;
+  transition: color 0.25s ease;
 }
 
 .works-project-link-target:hover {
@@ -527,15 +521,17 @@ button:focus-visible {
   letter-spacing: 0.12em;
   min-width: 44px;
   text-align: right;
+  transition: color 0.25s ease;
 }
 
 .works-project-name {
   font-family: "Maison Neue Mono", sans-serif;
   font-size: clamp(18px, 2.5vw, 36px);
   text-transform: uppercase;
-  color: #ffffff;
+  color: #a3a3a3;
   line-height: 1.05;
   white-space: nowrap;
+  transition: color 0.25s ease;
 }
 
 .works-project-tags {
@@ -559,6 +555,7 @@ button:focus-visible {
   border-radius: 2px;
   white-space: nowrap;
   flex-shrink: 0;
+  transition: color 0.25s ease;
 }
 
 /* Floating hover image — follows cursor Y */
