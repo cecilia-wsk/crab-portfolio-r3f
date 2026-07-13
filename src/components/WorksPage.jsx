@@ -48,6 +48,15 @@ const PROJECTS = [
     image: "/assets/algotransparency.webp",
   },
   {
+    id: "carabiners",
+    title: "Floating Carabiners",
+    category: "3D Experiment",
+    year: "2026",
+    tags: ["Three.js", "Physics"],
+    url: "https://carabiners.vercel.app/",
+    image: "/assets/carabiners.webp",
+  },
+  {
     id: "blob",
     title: "Blob study",
     category: "3D Experiment",
@@ -58,7 +67,7 @@ const PROJECTS = [
   },
   {
     id: "dna",
-    title: "DNA Particules",
+    title: "DNA Particles",
     category: "3D Experiment",
     year: "2024",
     tags: ["GLSL", "Three.js", "Shaders"],
@@ -115,7 +124,7 @@ const PROJECTS = [
     title: "Visual Data Particles",
     category: "3D Experiment",
     year: "2024",
-    tags: ["GLSL", "Three.js", "Shaders"],
+    tags: ["GLSL", "Three.js", "Shaders", "FBO"],
     url: "https://visualdata-head.vercel.app/",
     image: "/assets/visualdata.webp",
   },
