@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import gsap from "gsap";
 
 // ─── PROJECT DATA ───
 const PROJECTS = [
@@ -131,31 +132,126 @@ const PROJECTS = [
 ];
 
 export default function WorksPage() {
-  const [hovered, setHovered] = useState(null);
   const [mouseY, setMouseY] = useState(0);
-  const imgRef = useRef(null);
+  const [stack, setStack] = useState([]);
+  const maskRef = useRef(null);
+  const nextId = useRef(0);
+  const exitTimeoutRef = useRef(null);
+  const lastIndexRef = useRef(-1);
+  const entryDirRef = useRef("down");
 
-  // Toggle body class for z-index orchestration with status/social
+  // ─── Body class for works overlay ───
   useEffect(() => {
     document.body.classList.add("is-works");
     return () => document.body.classList.remove("is-works");
   }, []);
 
-  // Toggle body class for z-index orchestration with status/social
+  // ─── Cursor Y tracking ───
   useEffect(() => {
-    document.body.classList.add("is-works");
-    return () => document.body.classList.remove("is-works");
+    const onMove = (e) => setMouseY(e.clientY);
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
-  // Track cursor Y for the floating image
-  const onMouseMove = useCallback((e) => {
-    setMouseY(e.clientY);
-  }, []);
+  // ─── GSAP stack animation ───
+  useLayoutEffect(() => {
+    if (!maskRef.current || stack.length === 0) return;
 
+    const children = Array.from(maskRef.current.children);
+    const n = children.length;
+    const isDown = entryDirRef.current === "down";
+
+    children.forEach((child, i) => {
+      gsap.killTweensOf(child);
+
+      if (i === n - 1) {
+        // Newest layer: enter direction depends on scroll direction
+        const fromY = isDown ? 100 : -100;
+        gsap.fromTo(
+          child,
+          { yPercent: fromY },
+          { yPercent: 0, duration: 0.6, ease: "power2.out" },
+        );
+      } else {
+        // Existing layers: read current position and nudge in the travel direction
+        const currentY = gsap.getProperty(child, "yPercent") || 0;
+        const delta = isDown ? -100 : 100;
+        gsap.to(child, {
+          yPercent: currentY + delta,
+          duration: 0.6,
+          ease: "power2.out",
+        });
+      }
+    });
+  }, [stack]);
+
+  // ─── Push a new image layer ───
+  const push = (project) => {
+    if (exitTimeoutRef.current) {
+      clearTimeout(exitTimeoutRef.current);
+      exitTimeoutRef.current = null;
+    }
+
+    const currentIndex = PROJECTS.findIndex((p) => p.id === project.id);
+    const currentDir = currentIndex >= lastIndexRef.current ? "down" : "up";
+    lastIndexRef.current = currentIndex;
+
+    // Direction flipped → reset stack to avoid huge position jumps
+    if (entryDirRef.current !== currentDir && stack.length > 0) {
+      entryDirRef.current = currentDir;
+      setStack((prev) => {
+        const last = prev[prev.length - 1];
+        return [
+          { ...last, id: nextId.current++ },
+          { id: nextId.current++, src: project.image, alt: project.title },
+        ];
+      });
+      return;
+    }
+
+    entryDirRef.current = currentDir;
+
+    setStack((prev) => {
+      if (prev.length > 0 && prev[prev.length - 1].src === project.image)
+        return prev;
+      const next = [
+        ...prev,
+        { id: nextId.current++, src: project.image, alt: project.title },
+      ];
+      return next.length > 3 ? next.slice(next.length - 3) : next;
+    });
+  };
+
+  // ─── Cascade exit when leaving the works content ───
+  const exit = () => {
+    if (!maskRef.current) return;
+
+    const children = Array.from(maskRef.current.children);
+    const isDown = entryDirRef.current === "down";
+    children.forEach((child, i) => {
+      gsap.killTweensOf(child);
+      gsap.to(child, {
+        yPercent: isDown
+          ? -100 * (children.length - i)
+          : 100 * (children.length - i),
+        duration: 0.5,
+        ease: "power2.in",
+        delay: i * 0.05,
+      });
+    });
+
+    exitTimeoutRef.current = setTimeout(() => {
+      setStack([]);
+      exitTimeoutRef.current = null;
+    }, 700);
+  };
+
+  // Cleanup timeout on unmount
   useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
-  }, [onMouseMove]);
+    return () => {
+      if (exitTimeoutRef.current) clearTimeout(exitTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div className="page works-page">
@@ -164,13 +260,12 @@ export default function WorksPage() {
           <h1 className="works-title">Works</h1>
         </div>
 
-        <div className="works-list">
+        <div className="works-list" onMouseLeave={exit}>
           {PROJECTS.map((project) => (
             <div
               key={project.id}
               className="works-project"
-              onMouseEnter={() => setHovered(project)}
-              onMouseLeave={() => setHovered(null)}
+              onMouseEnter={() => push(project)}
             >
               <a
                 href={project.url === "#" ? undefined : project.url}
@@ -198,24 +293,24 @@ export default function WorksPage() {
         </div>
       </div>
 
-      {/* Floating hover image — follows cursor Y */}
+      {/* Image stack mask */}
       <div
-        ref={imgRef}
-        className={`works-hover-image ${hovered ? "is-visible" : ""}`}
-        style={
-          hovered
-            ? { transform: `translateY(${mouseY - window.innerHeight / 2}px)` }
-            : undefined
-        }
+        ref={maskRef}
+        className="works-hover-image"
+        style={{
+          transform: `translateY(${mouseY - window.innerHeight / 2}px)`,
+        }}
       >
-        {hovered && (
-          <img
-            src={hovered.image}
-            alt={hovered.title}
-            loading="lazy"
-            draggable={false}
-          />
-        )}
+        {stack.map((layer) => (
+          <div key={layer.id} className="works-hover-image-layer">
+            <img
+              src={layer.src}
+              alt={layer.alt}
+              loading="lazy"
+              draggable={false}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
