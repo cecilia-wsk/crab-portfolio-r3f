@@ -11,11 +11,9 @@
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-
   color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -38,7 +36,7 @@ html,
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden; /* prevent body scroll — pages are full-viewport */
+  overflow: hidden;
   background: #000;
 }
 
@@ -65,14 +63,14 @@ body {
   position: fixed;
   inset: 0;
   z-index: 10;
-  pointer-events: none; /* let clicks pass through empty areas */
+  pointer-events: none;
 }
 
 .shell .page {
   pointer-events: auto;
 }
 
-/* ─── Base page style (full viewport, centered content) ─── */
+/* ─── Base page style ─── */
 .page {
   position: fixed;
   inset: 0;
@@ -86,7 +84,6 @@ body {
 
 /* ─── Home page ─── */
 .home-page {
-  /* inherits base .page */
 }
 
 /* ─── About page ─── */
@@ -103,7 +100,7 @@ body {
   max-width: 100%;
 }
 
-/* ─── Large left-side headline (shared) ─── */
+/* ─── Large left-side headline ─── */
 .ui-headline {
   width: 90%;
   max-width: 1200px;
@@ -130,7 +127,7 @@ body {
   color: #fff;
 }
 
-/* ─── Section typography (shared with old styles) ─── */
+/* ─── Section typography ─── */
 .section-title {
   font-family: "Maison Neue Mono", sans-serif;
   font-size: clamp(28px, 4vw, 65px);
@@ -186,7 +183,7 @@ body {
   }
 }
 
-/* ─── Focus rings (WCAG 2.4.7) ─── */
+/* ─── Focus rings ─── */
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid #ff0000;
@@ -426,7 +423,6 @@ button:focus-visible {
 }
 
 .ui-nav-mobile-toggler-icon path {
-  // transition: all 0.2s ease-in-out;
   transition:
     transform 0.3s ease,
     opacity 0.2s ease;
@@ -488,6 +484,15 @@ button:focus-visible {
 .works-project {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+body.works-ready .works-project {
+  pointer-events: auto;
+}
+
+body.works-ready .works-project {
+  pointer-events: auto;
 }
 
 .works-project:first-child {
@@ -577,10 +582,10 @@ button:focus-visible {
   transition: color 0.25s ease;
 }
 
-/* Floating hover image — follows cursor Y */
+/* Floating hover image — mask with stacked slide-up layers */
 .works-hover-image {
   position: fixed;
-  top: 40vh;
+  top: 35vh;
   right: 5vw;
   width: clamp(200px, 22vw, 380px);
   height: auto;
@@ -588,15 +593,16 @@ button:focus-visible {
   overflow: hidden;
   pointer-events: none;
   z-index: 40;
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
-.works-hover-image.is-visible {
-  opacity: 1;
+.works-hover-image-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.works-hover-image img {
+.works-hover-image-layer img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -610,13 +616,11 @@ body.is-works:not(.menu-open) .ui-social {
   z-index: 9;
 }
 
-/* Works page: lower status + social behind the overlay (z=20/30) */
 body.is-works:not(.menu-open) .ui-bottom-left,
 body.is-works:not(.menu-open) .ui-social {
   z-index: 9;
 }
 
-/* Works page: lower status + social behind the overlay (z=20/30) */
 body.is-works:not(.menu-open) .ui-bottom-left,
 body.is-works:not(.menu-open) .ui-social {
   z-index: 9;
@@ -722,4 +726,46 @@ body.is-works:not(.menu-open) .ui-social {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ─── Loading screen (curtain) ─── */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loader-text {
+  font-family:
+    "Maison Neue Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.loader-line-wrapper {
+  width: 120px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.loader-line {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  transform-origin: left;
 }

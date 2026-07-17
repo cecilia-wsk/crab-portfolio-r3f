@@ -9,7 +9,6 @@ export const BASE_ROTATION_Y = -Math.PI * 0.92;
 
 const CrabParticles = forwardRef(function CrabParticles({ mouseRef }, ref) {
   const materialRef = useRef();
-  // load model (drei handles draco by default from a CDN when `true` is passed)
   const { scene } = useGLTF("/assets/crab_draco.glb", true);
 
   const geometry = useMemo(() => {
@@ -24,7 +23,7 @@ const CrabParticles = forwardRef(function CrabParticles({ mouseRef }, ref) {
 
     if (geo) {
       const pos = geo.attributes.position;
-      const stride = 4; // integer only: keep every 4th vertex
+      const stride = 4;
       const count = Math.floor(pos.count / stride);
       const reduced = new Float32Array(count * 3);
 
@@ -57,15 +56,9 @@ const CrabParticles = forwardRef(function CrabParticles({ mouseRef }, ref) {
     [],
   );
 
-  // update uResolution on window resize
   useEffect(() => {
     const onResize = () => {
-      uniforms.uResolution.value.set(
-        window.innerWidth,
-        window.innerHeight,
-        1,
-        1,
-      );
+      uniforms.uResolution.value.set(window.innerWidth, window.innerHeight, 1, 1);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -85,27 +78,15 @@ const CrabParticles = forwardRef(function CrabParticles({ mouseRef }, ref) {
         : BASE_ROTATION_Y;
       const targetX = mouseRef.current.y * 0.05;
       const targetY = mouseRef.current.x * 0.05 + currentBaseRotation;
-      ref.current.rotation.x = THREE.MathUtils.lerp(
-        ref.current.rotation.x,
-        targetX,
-        0.05,
-      );
-      ref.current.rotation.y = THREE.MathUtils.lerp(
-        ref.current.rotation.y,
-        targetY,
-        0.05,
-      );
+      ref.current.rotation.x = THREE.MathUtils.lerp(ref.current.rotation.x, targetX, 0.05);
+      ref.current.rotation.y = THREE.MathUtils.lerp(ref.current.rotation.y, targetY, 0.05);
     }
   });
 
   if (!geometry) return null;
 
   return (
-    <group
-      ref={ref}
-      rotation={[0, BASE_ROTATION_Y, 0]}
-      position={[-3, 0, 0]}
-    >
+    <group ref={ref} rotation={[0, BASE_ROTATION_Y, 0]} position={[-3, 0, 0]}>
       <points geometry={geometry} name="crab-particles">
         <shaderMaterial
           ref={materialRef}

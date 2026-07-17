@@ -6,6 +6,7 @@ import { Router } from "wouter";
 import Scene from "./components/Scene";
 import Nav from "./components/Nav";
 import Shell from "./components/Shell";
+import Loader from "./components/Loader";
 import HomePage from "./components/HomePage";
 import AboutPage from "./components/AboutPage";
 import WorksPage from "./components/WorksPage";
@@ -25,87 +26,26 @@ export default function App() {
 
   return (
     <Router>
+      <Loader />
+
       <div className="canvas-wrapper">
-        <Canvas
-          tabIndex={-1}
-          dpr={[1, 2]}
-          gl={{ antialias: true, powerPreference: "high-performance" }}
-        >
+        <Canvas tabIndex={-1} dpr={[1, 2]} gl={{ antialias: true, powerPreference: "high-performance" }}>
           <Scene mouseRef={mouseRef} crabRef={crabRef} />
         </Canvas>
       </div>
 
       <Nav />
 
-      {/* Availability status */}
-      <a
-        className="ui-status ui-bottom-left"
-        href="mailto:cecilia.wielonsky@gmail.com?subject=I%20want%20to%20collaborate%20on%20a%20creative%20project"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <a className="ui-status ui-bottom-left" href="mailto:cecilia.wielonsky@gmail.com?subject=I%20want%20to%20collaborate%20on%20a%20creative%20project" target="_blank" rel="noopener noreferrer">
         Available for work
         <span className="ui-dot ui-dot--green" />
       </a>
 
-      {/* Social links */}
       <div className="ui-social">
-        <a
-          href="mailto:cecilia.wielonsky@gmail.com"
-          className="ui-social-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/assets/arrow-external.svg"
-            alt=""
-            className="ui-social-arrow"
-            aria-hidden="true"
-          />
-          Email
-        </a>
-        <a
-          href="https://www.linkedin.com/in/cecilia-wielonsky/"
-          className="ui-social-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/assets/arrow-external.svg"
-            alt=""
-            className="ui-social-arrow"
-            aria-hidden="true"
-          />
-          Linkedin
-        </a>
-        <a
-          href="https://www.instagram.com/cecilia_wsk/"
-          className="ui-social-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/assets/arrow-external.svg"
-            alt=""
-            className="ui-social-arrow"
-            aria-hidden="true"
-          />
-          Instagram
-        </a>
-        <a
-          href="https://github.com/cecilia-wsk/"
-          className="ui-social-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/assets/arrow-external.svg"
-            alt=""
-            className="ui-social-arrow"
-            aria-hidden="true"
-          />
-          Github
-        </a>
+        <a href="mailto:cecilia.wielonsky@gmail.com" className="ui-social-link" target="_blank" rel="noopener noreferrer"><img src="/assets/arrow-external.svg" alt="" className="ui-social-arrow" aria-hidden="true" />Email</a>
+        <a href="https://www.linkedin.com/in/cecilia-wielonsky/" className="ui-social-link" target="_blank" rel="noopener noreferrer"><img src="/assets/arrow-external.svg" alt="" className="ui-social-arrow" aria-hidden="true" />Linkedin</a>
+        <a href="https://www.instagram.com/cecilia_wsk/" className="ui-social-link" target="_blank" rel="noopener noreferrer"><img src="/assets/arrow-external.svg" alt="" className="ui-social-arrow" aria-hidden="true" />Instagram</a>
+        <a href="https://github.com/cecilia-wsk/" className="ui-social-link" target="_blank" rel="noopener noreferrer"><img src="/assets/arrow-external.svg" alt="" className="ui-social-arrow" aria-hidden="true" />Github</a>
       </div>
 
       <Shell crabRef={crabRef}>

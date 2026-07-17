@@ -18,13 +18,7 @@ export default function Scene({ mouseRef, crabRef }) {
     <>
       <color attach="background" args={["#000000"]} />
       <CameraTarget />
-      <PerspectiveCamera
-        makeDefault
-        position={[0, 0, -6]}
-        fov={75}
-        near={0.1}
-        far={1000}
-      />
+      <PerspectiveCamera makeDefault position={[0, 0, -6]} fov={75} near={0.1} far={1000} />
       <Suspense fallback={null}>
         <CrabParticles ref={crabRef} mouseRef={mouseRef} />
       </Suspense>

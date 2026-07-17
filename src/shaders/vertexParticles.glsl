@@ -98,12 +98,6 @@ void main() {
 
   vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
   gl_PointSize = .25 * (1.0 / -mvPosition.z);
-  // // Calculate particle size
-  // float particleSize = 0.25; // Adjust this formula as needed
-  // // Adjust particle size based on screen resolution
-  // particleSize *= min(uResolution.a, uResolution.b)/min(16.,9.);
-  // // Set gl_PointSize
-  // gl_PointSize = particleSize;
-  
+
   gl_Position = projectionMatrix * mvPosition;
 }

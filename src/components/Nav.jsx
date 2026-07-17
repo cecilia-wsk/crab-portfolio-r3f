@@ -28,7 +28,6 @@ export default function Nav() {
         aria-expanded={isMenuOpen}
         onClick={() => setIsMenuOpen((p) => !p)}
       >
-        {/* <span class="ui-nav-mobile-toggler-icon"></span> */}
         <svg
           className="ui-nav-mobile-toggler-icon"
           width="40"
@@ -73,13 +72,13 @@ export default function Nav() {
         >
           <span className="ui-num">02</span>WORKS
         </a>
-        <a
+        {/* <a
           href="/contact"
           className={`ui-link ${location === "/contact" ? "active" : ""}`}
           onClick={handleNav("/contact")}
         >
           <span className="ui-num">03</span>CONTACT
-        </a>
+        </a> */}
       </div>
     </nav>
   );

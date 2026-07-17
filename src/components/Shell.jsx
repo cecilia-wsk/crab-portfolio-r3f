@@ -20,7 +20,6 @@ const PROFILES = {
     incoming: { from: { opacity: 0, y: -30 }, duration: 0.6, ease: "power2.out" },
     crab: "toHome",
   },
-  /* ─── Works arrives as overlay from bottom ─── */
   "*→/works": {
     outgoing: { opacity: 0.3, scale: 0.88, y: 0, duration: 0.9, ease: "power2.inOut" },
     incoming: { from: { opacity: 1, y: "100vh" }, to: { opacity: 1, y: 0 }, duration: 1, ease: "power3.inOut" },
@@ -30,7 +29,7 @@ const PROFILES = {
   "/works→*": {
     outgoing: { opacity: 1, scale: 1, y: "100vh", duration: 0.8, ease: "power3.inOut" },
     incoming: { from: { opacity: 0, scale: 0.94, y: 30 }, to: { opacity: 1, scale: 1, y: 0 }, duration: 0.8, ease: "power2.out" },
-    incomingZIndex: 35, /* above works overlay (z=30) */
+    incomingZIndex: 35,
     crab: null,
   },
   default: {
@@ -52,41 +51,9 @@ function firstMountEntrance(container, displayed) {
 
   if (displayed === "/") {
     gsap.fromTo(
-      page.querySelector(".home-headline-top"),
+      page.querySelectorAll(".ui-headline-top, .ui-headline-bottom"),
       { yPercent: 110 },
-      { yPercent: 0, duration: 1, delay: 0.3 },
-    );
-    gsap.fromTo(
-      page.querySelector(".home-headline-bottom"),
-      { yPercent: 110 },
-      { yPercent: 0, duration: 1, delay: 0.6 },
-    );
-    gsap.fromTo(
-      page.querySelector(".home-intro"),
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 1, delay: 1 },
-    );
-  } else if (displayed === "/about") {
-    gsap.fromTo(
-      page.querySelector(".about-title"),
-      { yPercent: 110 },
-      { yPercent: 0, duration: 0.6, delay: 0.2 },
-    );
-    gsap.fromTo(
-      page.querySelectorAll(".about-reveal-p1, .about-reveal-p2, .about-reveal-resume a"),
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.35 },
-    );
-  } else if (displayed === "/works") {
-    gsap.fromTo(
-      page.querySelector(".works-title"),
-      { yPercent: 110 },
-      { yPercent: 0, duration: 0.8, delay: 0.2 },
-    );
-    gsap.fromTo(
-      page.querySelectorAll(".works-project"),
-      { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, delay: 0.4 },
+      { yPercent: 0, duration: 1, ease: "power3.out", stagger: 0.3, delay: 0.3 },
     );
   }
 }
@@ -101,40 +68,36 @@ export default function Shell({ crabRef, children }) {
   const tlRef = useRef(null);
   const containerRef = useRef(null);
 
-  // On first mount: snap crab to match current route (retry until R3F ref exists)
   useLayoutEffect(() => {
     const trySet = () => {
       const g = crabRef.current;
       if (!g) return false;
       if (location === "/about") setCrabAtAbout(g, BASE_ROTATION_Y);
-      else if (location === "/works") setCrabAtHome(g, BASE_ROTATION_Y); /* works uses home crab position */
+      else if (location === "/works") setCrabAtHome(g, BASE_ROTATION_Y);
       else setCrabAtHome(g, BASE_ROTATION_Y);
       return true;
     };
-
     if (!trySet()) {
-      const id = setInterval(() => {
-        if (trySet()) clearInterval(id);
-      }, 50);
+      const id = setInterval(() => { if (trySet()) clearInterval(id); }, 50);
       return () => clearInterval(id);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line
 
-  // First-mount entrance animation (no transition — direct page load)
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     firstMountEntrance(container, displayed);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (displayed === "/works") {
+      document.body.classList.add("works-ready");
+    }
+  }, []); // eslint-disable-line
 
-  // Detect route change, start crab animation, flag incoming render
   useEffect(() => {
     const from = displayed;
     const to = location;
     if (from === to) return;
 
     if (isTransitioningRef.current) {
-      // Mid-click: kill running timeline, snap to where we were going, then start fresh
       if (tlRef.current) {
         tlRef.current.kill();
         tlRef.current = null;
@@ -145,7 +108,6 @@ export default function Shell({ crabRef, children }) {
       setRenderIncoming(false);
       setIncomingRoute(null);
       targetRef.current = null;
-      // Let React flush, then re-run this effect for the new location
       return;
     }
 
@@ -156,13 +118,13 @@ export default function Shell({ crabRef, children }) {
     setRenderIncoming(true);
 
     const g = crabRef.current;
+    document.body.classList.remove("works-ready");
     if (g) {
       if (to === "/about") animateCrabToAbout(g, BASE_ROTATION_Y);
       else if (to === "/") animateCrabToHome(g, BASE_ROTATION_Y);
     }
   }, [location, displayed, crabRef]);
 
-  // After React commits the incoming page to DOM, set up GSAP
   useLayoutEffect(() => {
     if (!renderIncoming || !targetRef.current) return;
 
@@ -182,74 +144,36 @@ export default function Shell({ crabRef, children }) {
           setIncomingRoute(null);
           targetRef.current = null;
           tlRef.current = null;
+          if (to === "/works") document.body.classList.add("works-ready");
         },
       });
       tlRef.current = tl;
 
-      // ─── OUTGOING page ───
       if (outgoing) {
-        tl.to(
-          outgoing,
-          {
-            opacity: profile.outgoing.opacity ?? 0,
-            scale: profile.outgoing.scale ?? 1,
-            y: profile.outgoing.y ?? 0,
-            duration: profile.outgoing.duration,
-            ease: profile.outgoing.ease,
-          },
-          0,
-        );
+        tl.to(outgoing, {
+          opacity: profile.outgoing.opacity ?? 0,
+          scale: profile.outgoing.scale ?? 1,
+          y: profile.outgoing.y ?? 0,
+          duration: profile.outgoing.duration,
+          ease: profile.outgoing.ease,
+        }, 0);
 
-        // Home-specific exit
         if (from === "/") {
-          tl.to(
-            outgoing.querySelectorAll(".home-headline-top, .home-headline-bottom"),
-            { yPercent: -110, duration: 0.6, ease: "power2.in", stagger: 0.05 },
-            0,
-          );
-          tl.to(
-            outgoing.querySelector(".home-intro"),
-            { opacity: 0, y: -20, duration: 0.5, ease: "power2.in" },
-            0,
-          );
+          tl.to(outgoing.querySelectorAll(".ui-headline-top, .ui-headline-bottom"), { yPercent: -110, duration: 0.6, ease: "power2.in", stagger: 0.05 }, 0);
+          tl.to(outgoing.querySelector(".home-intro"), { opacity: 0, y: -20, duration: 0.5, ease: "power2.in" }, 0);
         }
 
-        // About-specific exit
         if (from === "/about") {
-          tl.to(
-            outgoing.querySelector(".about-title"),
-            { yPercent: -110, duration: 0.5, ease: "power2.in" },
-            0,
-          );
-          tl.to(
-            outgoing.querySelectorAll(".about-reveal-p1, .about-reveal-p2, .about-reveal-resume a"),
-            { opacity: 0, y: -20, duration: 0.5, ease: "power2.in", stagger: 0.03 },
-            0,
-          );
+          tl.to(outgoing.querySelector(".about-title"), { yPercent: -110, duration: 0.5, ease: "power2.in" }, 0);
+          tl.to(outgoing.querySelectorAll(".about-reveal-p1, .about-reveal-p2, .about-reveal-resume a"), { opacity: 0, y: -20, duration: 0.5, ease: "power2.in", stagger: 0.03 }, 0);
         }
 
-        // Works exit: rows cascade down, then container drops
         if (from === "/works") {
-          tl.to(
-            outgoing.querySelector(".works-title"),
-            { yPercent: -110, duration: 0.4, ease: "power2.in" },
-            0,
-          );
-          tl.to(
-            outgoing.querySelectorAll(".works-project"),
-            {
-              opacity: 0,
-              y: 60,
-              duration: 0.4,
-              ease: "power2.in",
-              stagger: { each: 0.06, from: "start" },
-            },
-            0.05,
-          );
+          tl.to(outgoing.querySelector(".works-title"), { yPercent: -110, duration: 0.4, ease: "power2.in" }, 0);
+          tl.to(outgoing.querySelectorAll(".works-project"), { opacity: 0, y: 60, duration: 0.4, ease: "power2.in", stagger: { each: 0.06, from: "start" } }, 0.05);
         }
       }
 
-      // ─── INCOMING page ───
       if (incoming) {
         gsap.set(incoming, {
           opacity: profile.incoming.from.opacity ?? 0,
@@ -260,31 +184,22 @@ export default function Shell({ crabRef, children }) {
           zIndex: profile.incomingZIndex ?? 20,
         });
 
-        // Wrapper entry
-        tl.to(
-          incoming,
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: profile.incoming.duration,
-            ease: profile.incoming.ease,
-          },
-          0.1,
-        );
+        tl.to(incoming, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: profile.incoming.duration,
+          ease: profile.incoming.ease,
+        }, 0.1);
 
-        // Home entrance
         if (to === "/") {
-          gsap.set(incoming.querySelectorAll(".home-headline-top, .home-headline-bottom"), {
-            yPercent: 110,
-          });
+          gsap.set(incoming.querySelectorAll(".ui-headline-top, .ui-headline-bottom"), { yPercent: 110 });
           gsap.set(incoming.querySelector(".home-intro"), { opacity: 0, y: 20 });
-          tl.to(incoming.querySelector(".home-headline-top"), { yPercent: 0, duration: 1, ease: "power2.inOut" }, 0.3);
-          tl.to(incoming.querySelector(".home-headline-bottom"), { yPercent: 0, duration: 1, ease: "power2.inOut" }, 0.6);
+          tl.to(incoming.querySelector(".ui-headline-top"), { yPercent: 0, duration: 1, ease: "power2.inOut" }, 0.3);
+          tl.to(incoming.querySelector(".ui-headline-bottom"), { yPercent: 0, duration: 1, ease: "power2.inOut" }, 0.6);
           tl.to(incoming.querySelector(".home-intro"), { opacity: 1, y: 0, duration: 1, ease: "power2.inOut" }, 1);
         }
 
-        // About entrance
         if (to === "/about") {
           gsap.set(incoming.querySelector(".about-title"), { yPercent: 110 });
           gsap.set(incoming.querySelectorAll(".about-reveal-p1, .about-reveal-p2, .about-reveal-resume a"), { opacity: 0, y: 30 });
@@ -294,20 +209,11 @@ export default function Shell({ crabRef, children }) {
           tl.to(incoming.querySelector(".about-reveal-resume a"), { opacity: 1, y: 0, duration: 0.5, ease: "power2.inOut" }, 0.55);
         }
 
-        // Works entrance
         if (to === "/works") {
           gsap.set(incoming.querySelector(".works-title"), { yPercent: 110 });
           gsap.set(incoming.querySelectorAll(".works-project"), { opacity: 0, y: 40 });
-          tl.to(
-            incoming.querySelector(".works-title"),
-            { yPercent: 0, duration: 0.8, ease: "power2.inOut" },
-            0.3,
-          );
-          tl.to(
-            incoming.querySelectorAll(".works-project"),
-            { opacity: 1, y: 0, duration: 0.6, ease: "power2.inOut", stagger: { each: 0.08, from: "start" } },
-            0.5,
-          );
+          tl.to(incoming.querySelector(".works-title"), { yPercent: 0, duration: 0.8, ease: "power2.inOut" }, 0.3);
+          tl.to(incoming.querySelectorAll(".works-project"), { opacity: 1, y: 0, duration: 0.6, ease: "power2.inOut", stagger: { each: 0.08, from: "start" } }, 0.5);
         }
       }
     }, container);
@@ -320,14 +226,12 @@ export default function Shell({ crabRef, children }) {
 
   return (
     <div ref={containerRef} className="shell">
-      {/* Base page (home or about) — always rendered */}
       <div className="page page--outgoing">
         {displayed === "/" && children("/")}
         {displayed === "/about" && children("/about")}
         {displayed === "/works" && children("/works")}
       </div>
 
-      {/* Incoming layer — only during transition */}
       {renderIncoming && (
         <div className="page page--incoming">
           {incomingRoute === "/" && children("/")}
