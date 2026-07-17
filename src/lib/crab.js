@@ -1,7 +1,7 @@
 import gsap from "gsap";
 
-const HOME_STATE = { pos: [-3, 0, 0], scale: [1, 1, 1] };
-const ABOUT_STATE = { pos: [3.5, 0, 0], scale: [0.9, 0.9, 0.9] };
+const HOME_STATE = { pos: [-3, 0.5, 0], scale: [1, 1, 1] };
+const ABOUT_STATE = { pos: [4, 0, 0], scale: [0.8, 0.8, 0.8] };
 
 export async function animateCrabToAbout(crabGroup, baseRotation) {
   if (!crabGroup) return;
@@ -26,7 +26,9 @@ export async function animateCrabToAbout(crabGroup, baseRotation) {
       y: baseRotation + Math.PI * 0.8,
       duration: 1.2,
       ease: "power2.inOut",
-      onStart: () => { crabGroup.userData.targetRotationY = baseRotation + Math.PI * 0.8; },
+      onStart: () => {
+        crabGroup.userData.targetRotationY = baseRotation + Math.PI * 0.8;
+      },
     }),
   ]);
 
@@ -56,7 +58,9 @@ export async function animateCrabToHome(crabGroup, baseRotation) {
       y: baseRotation,
       duration: 1.2,
       ease: "power2.inOut",
-      onStart: () => { crabGroup.userData.targetRotationY = baseRotation; },
+      onStart: () => {
+        crabGroup.userData.targetRotationY = baseRotation;
+      },
     }),
   ]);
 
